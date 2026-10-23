@@ -38,7 +38,6 @@ jobs:
       - name: Run Cloud Autopilot (Produce & Schedule Next Days)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: node scripts/cloud-runner.js
 
       - name: Commit and Push Calendar Updates

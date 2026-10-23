@@ -38,29 +38,12 @@ Return ONLY a valid JSON array of objects with this schema:
 ]`;
 
   try {
-    let text;
-    if (process.env.OPENROUTER_API_KEY) {
-      console.log('🤖 Using OpenRouter Llama 3.3 70B for high-depth Kannada script generation...');
-      const axios = require('axios');
-      const orRes = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-        model: 'meta-llama/llama-3.3-70b-instruct',
-        messages: [{ role: 'user', content: prompt }]
-      }, {
-        headers: {
-          'Authorization': 'Bearer ' + process.env.OPENROUTER_API_KEY,
-          'HTTP-Referer': 'https://kannadiga369.com',
-          'X-Title': 'Kannadiga 369'
-        }
-      });
-      text = orRes.data.choices[0].message.content;
-    } else {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      const response = await ai.models.generateContent({
-        model: 'gemini-flash-latest',
-        contents: prompt
-      });
-      text = response.text;
-    }
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-flash-latest',
+      contents: prompt
+    });
+    const text = response.text;
 
     const cleanJson = text?.replace(/```json/g, '')?.replace(/```/g, '')?.trim();
     const newTopics = JSON.parse(cleanJson);
