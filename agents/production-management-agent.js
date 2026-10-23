@@ -155,6 +155,7 @@ class ProductionManagementAgent {
   }
 
   formatScriptForTTS(script) {
+    if (script.fullNarration) return script.fullNarration;
     let ttsText = '';
     
     // Add hook

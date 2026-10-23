@@ -2,9 +2,10 @@ const OpenAI = require('openai');
 const { Logger } = require('./logger');
 
 const GEMINI_MODELS = [
-  'gemini-3.8-flash',
-  'gemini-4-argon',
+  'gemini-3.5-flash',
   'gemini-3.5-flash-lite',
+  'gemini-3.6-flash',
+  'gemini-3.1-flash-lite'
 ];
 const GEMINI_DEFAULT_MODEL = GEMINI_MODELS[0];
 // Floor for the single retry after a thinking model exhausts a small budget.

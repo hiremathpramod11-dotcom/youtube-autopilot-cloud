@@ -1,0 +1,49 @@
+name: YouTube 365-Day Cloud Autopilot
+
+on:
+  schedule:
+    # Runs everyday at 1:00 PM IST (07:30 UTC) in GitHub Cloud
+    - cron: '30 7 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI / mobile anytime
+
+jobs:
+  run-daily-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install FFmpeg in Cloud
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Restore Cloud Credentials from GitHub Secrets
+        env:
+          CREDS: ${{ secrets.YOUTUBE_CREDENTIALS_JSON }}
+          TOKENS: ${{ secrets.YOUTUBE_TOKENS_JSON }}
+        run: |
+          mkdir -p config
+          echo "$CREDS" > config/credentials.json
+          echo "$TOKENS" > config/tokens.json
+
+      - name: Install Node Dependencies
+        run: npm install
+
+      - name: Run Cloud Autopilot (Produce & Schedule Next Days)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/cloud-runner.js
+
+      - name: Commit and Push Calendar Updates
+        run: |
+          git config --global user.name "Kannadiga369-CloudBot"
+          git config --global user.email "bot@kannadiga369.com"
+          git add data/30_day_calendar.json
+          git commit -m "chore: updated YouTube cloud calendar state" || echo "No changes to commit"
+          git push
