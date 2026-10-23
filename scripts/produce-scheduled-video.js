@@ -314,6 +314,95 @@ async function produceScheduledVideo(targetDay) {
     console.warn('Thumbnail set warning:', err.message);
   }
 
+  // 8. Produce & Schedule Companion Viral Short (9:16 Vertical)
+  try {
+    console.log(`🎬 Producing Companion Viral YouTube Short for Day ${entry.day}...`);
+    const shortAudioPath = path.join(audioDir, `day_${entry.day}_short_narration.mp3`);
+    const shortNarration = `${entry.hook} ಪೂರ್ಣ ಆಘಾತಕಾರಿ ಸತ್ಯ ತಿಳಿಯಲು ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ!`;
+    await generateGeminiAudio(shortNarration, shortAudioPath);
+
+    const shortDur = await new Promise((resolve) => {
+      const { exec } = require('child_process');
+      exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${shortAudioPath}"`, (err, stdout) => {
+        resolve(parseFloat(stdout) || 35);
+      });
+    });
+
+    const shortClipsDir = path.join(tempDir, 'short_clips');
+    await fs.mkdir(shortClipsDir, { recursive: true });
+    const shortClipPaths = [];
+    const shortImages = images.slice(0, 4);
+    const shortClipDur = shortDur / shortImages.length;
+
+    for (let i = 0; i < shortImages.length; i++) {
+      const sOut = path.join(shortClipsDir, `sclip_${i}.mp4`);
+      const motion = i % 2 === 0 ? 'push' : 'pull';
+      const frames = Math.max(30, Math.round(shortClipDur * 30));
+      const zExpr = motion === 'push'
+        ? `scale=2160x3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='min(zoom+0.002,1.22)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=30`
+        : `scale=2160x3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='if(lte(zoom,1.0),1.22,max(1.001,zoom-0.002))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=30`;
+
+      await runFFmpeg([
+        '-y', '-loop', '1', '-i', shortImages[i],
+        '-vf', zExpr,
+        '-t', shortClipDur.toFixed(2),
+        '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p',
+        sOut
+      ]);
+      shortClipPaths.push(sOut);
+    }
+
+    const sConcat = path.join(shortClipsDir, 'sconcat.txt');
+    await fs.writeFile(sConcat, shortClipPaths.map(p => `file '${p.replace(/\\/g, '/')}'`).join('\n'), 'utf8');
+    const sRaw = path.join(shortClipsDir, 'sraw.mp4');
+    await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', sConcat, '-c', 'copy', sRaw]);
+
+    const sMixedAudio = path.join(shortClipsDir, 'smixed.mp3');
+    await runFFmpeg([
+      '-y', '-i', shortAudioPath, '-stream_loop', '-1', '-i', bgMusicPath,
+      '-filter_complex', '[0:a]volume=1.1[v];[1:a]volume=0.15[bg];[v][bg]amix=inputs=2:duration=first[aout]',
+      '-map', '[aout]', '-c:a', 'libmp3lame', '-b:a', '192k',
+      sMixedAudio
+    ]);
+
+    const finalShortVideo = path.join(videosDir, `day_${entry.day}_short_${Date.now()}.mp4`);
+    await runFFmpeg([
+      '-y', '-i', sRaw, '-i', sMixedAudio,
+      '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest',
+      finalShortVideo
+    ]);
+
+    // Schedule short 4.5 hours earlier (1:30 PM IST / 08:00 UTC)
+    const shortDate = new Date(new Date(entry.scheduledDate).getTime() - (4.5 * 60 * 60 * 1000)).toISOString();
+    console.log(`📤 Uploading Companion Short scheduled for ${shortDate}...`);
+
+    const shortUpload = await yt.videos.insert({
+      part: ['snippet', 'status'],
+      requestBody: {
+        snippet: {
+          title: `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
+          description: `${entry.hook}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
+          tags: ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
+          categoryId: '27',
+          defaultLanguage: 'kn',
+          defaultAudioLanguage: 'kn'
+        },
+        status: {
+          privacyStatus: 'private',
+          publishAt: shortDate,
+          selfDeclaredMadeForKids: false
+        }
+      },
+      media: {
+        body: fsSync.createReadStream(finalShortVideo)
+      }
+    });
+
+    console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortUpload.data.id}`);
+  } catch (shortErr) {
+    console.warn('Companion short notice:', shortErr.message);
+  }
+
   // Update calendar
   entry.status = 'scheduled';
   entry.videoId = videoId;
