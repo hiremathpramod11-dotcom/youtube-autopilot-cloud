@@ -222,7 +222,7 @@
   },
   {
     "day": 10,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-10-31T12:30:00.000Z",
     "title": "ಬೀದರ್ ಕೋಟೆಯ 500 ವರ್ಷ ಹಳೆಯ ಕರೇಜ್ ಭೂಗತ ನೀರಿನ ಪವಾಡ! 😱💧 | Bidar Fort Karez",
     "wikiTitles": [
@@ -245,7 +245,8 @@
     ],
     "renderedVideo": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\data\\videos\\day_10_ready.mp4",
     "renderedThumbnail": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\uploads\\thumbnails\\thumb_day_10.jpg",
-    "isRendered": true
+    "isRendered": true,
+    "videoId": "jWpepquY5qc"
   },
   {
     "day": 11,
