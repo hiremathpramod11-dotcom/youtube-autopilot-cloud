@@ -398,7 +398,9 @@ async function produceScheduledVideo(targetDay) {
       }
     });
 
-    console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortUpload.data.id}`);
+    const shortId = shortUpload.data.id;
+    console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortId}`);
+    entry.shortVideoId = shortId;
   } catch (shortErr) {
     console.warn('Companion short notice:', shortErr.message);
   }

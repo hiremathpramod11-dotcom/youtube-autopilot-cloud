@@ -11,11 +11,12 @@
     "status": "published",
     "videoId": "DVw06PqujMs",
     "title": "ಬ್ರಿಟಿಷರನ್ನೇ ನಡುಗಿಸಿದ ಚಿತ್ರದುರ್ಗದ 7 ಸುತ್ತಿನ ಕೋಟೆಯ ರಹಸ್ಯ & ಒನಕೆ ಓಬವ್ವ! 🏰😱 | Chitradurga Fort",
-    "topic": "Chitradurga Fort & Legend of Onake Obavva"
+    "topic": "Chitradurga Fort & Legend of Onake Obavva",
+    "shortVideoId": "KJlnpAEf3kk"
   },
   {
     "day": 3,
-    "status": "scheduled",
+    "status": "published",
     "scheduledDate": "2026-10-24T12:30:00.000Z",
     "title": "57 ಅಡಿ ಎತ್ತರದ ಶ್ರವಣಬೆಳಗೊಳದ ಗೊಮ್ಮಟೇಶ್ವರನ ಬೆಚ್ಚಿಬೀಳಿಸುವ ರಹಸ್ಯಗಳು! 😱🗿 | Shravanabelagola Gommateshwara",
     "wikiTitles": [
@@ -190,7 +191,8 @@
     "renderedVideo": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\data\\videos\\day_8_ready.mp4",
     "renderedThumbnail": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\uploads\\thumbnails\\thumb_day_8.jpg",
     "isRendered": true,
-    "videoId": "ZVKKi3T1W2U"
+    "videoId": "ZVKKi3T1W2U",
+    "shortVideoId": "ESItsjKDlg8"
   },
   {
     "day": 9,
@@ -218,7 +220,8 @@
     "renderedVideo": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\data\\videos\\day_9_ready.mp4",
     "renderedThumbnail": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\uploads\\thumbnails\\thumb_day_9.jpg",
     "isRendered": true,
-    "videoId": "j-WoNJgh4rk"
+    "videoId": "j-WoNJgh4rk",
+    "shortVideoId": "IjdUtsoY5uo"
   },
   {
     "day": 10,
