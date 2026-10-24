@@ -194,7 +194,7 @@
   },
   {
     "day": 9,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-10-30T12:30:00.000Z",
     "title": "ಬೆಂಗಳೂರಿನ ಕೆಂಪೇಗೌಡರ 4 ಗೋಪುರಗಳ ನಿಗೂಢ ಭವಿಷ್ಯವಾಣಿ! 😱🏙️ | Bangalore 4 Towers",
     "wikiTitles": [
@@ -217,7 +217,8 @@
     ],
     "renderedVideo": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\data\\videos\\day_9_ready.mp4",
     "renderedThumbnail": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\uploads\\thumbnails\\thumb_day_9.jpg",
-    "isRendered": true
+    "isRendered": true,
+    "videoId": "j-WoNJgh4rk"
   },
   {
     "day": 10,
