@@ -166,7 +166,7 @@
   },
   {
     "day": 8,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-10-29T12:30:00.000Z",
     "title": "ಉತ್ತರ ಕನ್ನಡದ ಕವಳ ಗುಹೆಗಳ ಕಗ್ಗತ್ತಲ ಭೂಗತ ಜಗತ್ತು! 😱🦇 | Kavala Caves Dandeli",
     "wikiTitles": [
@@ -189,7 +189,8 @@
     ],
     "renderedVideo": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\data\\videos\\day_8_ready.mp4",
     "renderedThumbnail": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\uploads\\thumbnails\\thumb_day_8.jpg",
-    "isRendered": true
+    "isRendered": true,
+    "videoId": "ZVKKi3T1W2U"
   },
   {
     "day": 9,
