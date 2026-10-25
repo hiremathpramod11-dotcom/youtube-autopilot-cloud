@@ -232,19 +232,27 @@ async function produceScheduledVideo(targetDay) {
   await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', concatList, '-c', 'copy', rawVisual]);
 
   // 4. Mix Audio
-  const bgMusicPath = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
+  const candidateBg1 = path.join(__dirname, '..', 'assets', 'audio', 'cinematic_suspense.mp3');
+  const candidateBg2 = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
+  const bgMusicPath = fsSync.existsSync(candidateBg1) ? candidateBg1 : (fsSync.existsSync(candidateBg2) ? candidateBg2 : null);
   const mixedAudio = path.join(tempDir, 'mixed_audio.mp3');
-  await runFFmpeg([
-    '-y',
-    '-i', audioPath,
-    '-stream_loop', '-1',
-    '-i', bgMusicPath,
-    '-filter_complex', '[0:a]volume=1.05[v];[1:a]volume=0.13[bg];[v][bg]amix=inputs=2:duration=first:dropout_transition=2[aout]',
-    '-map', '[aout]',
-    '-c:a', 'libmp3lame',
-    '-b:a', '192k',
-    mixedAudio
-  ]);
+
+  if (bgMusicPath) {
+    await runFFmpeg([
+      '-y',
+      '-i', audioPath,
+      '-stream_loop', '-1',
+      '-i', bgMusicPath,
+      '-filter_complex', '[0:a]volume=1.05[v];[1:a]volume=0.13[bg];[v][bg]amix=inputs=2:duration=first:dropout_transition=2[aout]',
+      '-map', '[aout]',
+      '-c:a', 'libmp3lame',
+      '-b:a', '192k',
+      mixedAudio
+    ]);
+  } else {
+    console.log('ℹ️ Running clean narration audio mix (no background track found)...');
+    await runFFmpeg(['-y', '-i', audioPath, '-c:a', 'libmp3lame', '-b:a', '192k', mixedAudio]);
+  }
 
   // 5. Final Subtitle-Free Clean Video
   const videosDir = path.join(__dirname, '..', 'data', 'videos');
@@ -264,10 +272,15 @@ async function produceScheduledVideo(targetDay) {
 
   // 6. Thumbnail
   const thumbPath = path.join(__dirname, '..', 'uploads', 'thumbnails', `thumb_day_${entry.day}.jpg`);
-  const headline = entry.day === 3 
-    ? ['57 ಅಡಿ', 'ಗೊಮ್ಮಟೇಶ್ವರನ', 'ನಿಗೂಢ ರಹಸ್ಯ!'] 
-    : ['ಮೈಸೂರು', 'ಅರಮನೆಯ', 'ರಹಸ್ಯ ಸುರಂಗ!'];
-  const badge = entry.day === 3 ? '🗿 57 ಅಡಿ ಏಕಶಿಲಾ ರಹಸ್ಯ!' : '🏰 ರಹಸ್ಯ ಸುರಂಗ ಮಾರ್ಗ!';
+  await fs.mkdir(path.dirname(thumbPath), { recursive: true });
+
+  const words = (entry.title || '').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 0);
+  const headline = [
+    words.slice(0, 2).join(' ') || 'ಕರ್ನಾಟಕದ',
+    words.slice(2, 4).join(' ') || 'ಬೆಚ್ಚಿಬೀಳಿಸುವ',
+    words.slice(4, 7).join(' ') || 'ನಿಗೂಢ ರಹಸ್ಯ!'
+  ];
+  const badge = `🚩 DAY ${entry.day} • ${entry.topic || 'ರಹಸ್ಯ ಇತಿಹಾಸ'}`.substring(0, 32);
   await createMasterThumbnail(images[0], headline, badge, thumbPath);
 
   // 7. Upload to YouTube with native Cloud Scheduling (`publishAt`)
@@ -358,12 +371,16 @@ async function produceScheduledVideo(targetDay) {
     await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', sConcat, '-c', 'copy', sRaw]);
 
     const sMixedAudio = path.join(shortClipsDir, 'smixed.mp3');
-    await runFFmpeg([
-      '-y', '-i', shortAudioPath, '-stream_loop', '-1', '-i', bgMusicPath,
-      '-filter_complex', '[0:a]volume=1.1[v];[1:a]volume=0.15[bg];[v][bg]amix=inputs=2:duration=first[aout]',
-      '-map', '[aout]', '-c:a', 'libmp3lame', '-b:a', '192k',
-      sMixedAudio
-    ]);
+    if (bgMusicPath) {
+      await runFFmpeg([
+        '-y', '-i', shortAudioPath, '-stream_loop', '-1', '-i', bgMusicPath,
+        '-filter_complex', '[0:a]volume=1.1[v];[1:a]volume=0.15[bg];[v][bg]amix=inputs=2:duration=first[aout]',
+        '-map', '[aout]', '-c:a', 'libmp3lame', '-b:a', '192k',
+        sMixedAudio
+      ]);
+    } else {
+      await runFFmpeg(['-y', '-i', shortAudioPath, '-c:a', 'libmp3lame', '-b:a', '192k', sMixedAudio]);
+    }
 
     const finalShortVideo = path.join(videosDir, `day_${entry.day}_short_${Date.now()}.mp4`);
     await runFFmpeg([

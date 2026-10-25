@@ -57,7 +57,7 @@
   },
   {
     "day": 4,
-    "status": "scheduled",
+    "status": "published",
     "scheduledDate": "2026-10-25T12:30:00.000Z",
     "title": "ಮೈಸೂರು ಅರಮನೆಯಿಂದ ಶ್ರೀರಂಗಪಟ್ಟಣಕ್ಕೆ ರಹಸ್ಯ ಸುರಂಗ ಮಾರ್ಗ! 😱🏰 | Mysore Palace Hidden Tunnels",
     "wikiTitles": [
@@ -253,7 +253,7 @@
   },
   {
     "day": 11,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-01T12:30:00.000Z",
     "title": "ಕರ್ನಾಟಕದ ಭೂತ ನಗರ: 365 ದೇವಾಲಯಗಳ ಬಾರಕೂರು ರಾಜಧಾನಿ! 😱🏛️ | Barkur Ghost Town",
     "wikiTitles": [
@@ -273,7 +273,9 @@
       "Karnataka mysteries",
       "Kannada history",
       "Kannada facts"
-    ]
+    ],
+    "shortVideoId": "wzLxpY_olfo",
+    "videoId": "OxYnKqFzfIA"
   },
   {
     "day": 12,

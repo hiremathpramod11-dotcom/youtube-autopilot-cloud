@@ -10,10 +10,14 @@ jobs:
   run-daily-production:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
@@ -28,9 +32,17 @@ jobs:
           CREDS: ${{ secrets.YOUTUBE_CREDENTIALS_JSON }}
           TOKENS: ${{ secrets.YOUTUBE_TOKENS_JSON }}
         run: |
-          mkdir -p config
-          echo "$CREDS" > config/credentials.json
-          echo "$TOKENS" > config/tokens.json
+          node -e "
+            const fs = require('fs');
+            fs.mkdirSync('config', { recursive: true });
+            if (!process.env.CREDS || !process.env.TOKENS) {
+              console.error('Missing YOUTUBE_CREDENTIALS_JSON or YOUTUBE_TOKENS_JSON in GitHub Secrets!');
+              process.exit(1);
+            }
+            fs.writeFileSync('config/credentials.json', process.env.CREDS.trim());
+            fs.writeFileSync('config/tokens.json', process.env.TOKENS.trim());
+            console.log('✓ Credentials and tokens successfully restored in cloud runtime.');
+          "
 
       - name: Install Node Dependencies
         run: npm install
@@ -46,5 +58,4 @@ jobs:
           git config --global user.name "Kannadiga369-CloudBot"
           git config --global user.email "bot@kannadiga369.com"
           git add data/30_day_calendar.json
-          git commit -m "chore: updated YouTube cloud calendar state" || echo "No changes to commit"
-          git push
+          git diff --staged --quiet || (git commit -m "chore: updated YouTube cloud calendar state [skip ci]" && git push)

@@ -58,6 +58,7 @@ build/
 # YouTube specific
 *.mp4
 *.mp3
+!assets/audio/*.mp3
 *.wav
 *.webm
 *.mkv

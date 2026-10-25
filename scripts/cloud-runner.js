@@ -115,6 +115,9 @@ async function run() {
   const batch = pending.slice(0, 5);
   console.log(`🚀 Processing Cloud Batch of ${batch.length} days: Days [${batch.map(b => b.day).join(', ')}]`);
 
+  let scheduledCount = 0;
+  let encounteredErrors = [];
+
   for (const item of batch) {
     console.log(`\n☁️ [Cloud Job] Producing & Scheduling Day ${item.day}: ${item.title}`);
     try {
@@ -123,18 +126,25 @@ async function run() {
         cwd: path.join(__dirname, '..')
       });
       console.log(`✅ Day ${item.day} successfully scheduled into YouTube Cloud!`);
+      scheduledCount++;
     } catch (err) {
       console.error(`⚠️ Notice on Day ${item.day}:`, err.message);
       if (err.message.includes('quotaExceeded') || err.message.includes('exceeded the number of videos')) {
         console.log('Reached daily YouTube upload limit. Next batch will run on tomorrow’s cloud trigger.');
         break;
+      } else {
+        encounteredErrors.push(`Day ${item.day}: ${err.message}`);
       }
     }
   }
 
   console.log('\n═'.repeat(65));
-  console.log('✅ Cloud batch run complete. Progress saved.');
+  console.log(`✅ Cloud batch run complete. Scheduled ${scheduledCount} days.`);
   console.log('═'.repeat(65));
+
+  if (scheduledCount === 0 && encounteredErrors.length > 0) {
+    throw new Error('Cloud batch failed to schedule any videos:\n' + encounteredErrors.join('\n'));
+  }
 }
 
 run().catch(err => {
