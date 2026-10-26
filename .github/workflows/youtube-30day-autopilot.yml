@@ -2,8 +2,10 @@ name: YouTube 365-Day Cloud Autopilot
 
 on:
   schedule:
-    # Runs everyday at 1:00 PM IST (07:30 UTC) in GitHub Cloud
-    - cron: '30 7 * * *'
+    # Trigger 1: 12:45 PM IST (07:15 UTC) - avoids top-of-hour congestion
+    - cron: '15 7 * * *'
+    # Trigger 2: 5:15 PM IST (11:45 UTC) - secondary catch-up trigger
+    - cron: '45 11 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI / mobile anytime
 
 jobs:

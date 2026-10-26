@@ -102,6 +102,35 @@ async function run() {
   calendar = await autoExpandCalendar(calendar);
   await fs.writeFile(calendarPath, JSON.stringify(calendar, null, 2), 'utf8');
 
+  let scheduledCount = 0;
+  let encounteredErrors = [];
+
+  // Phase 1: Backfill missing companion Shorts on already scheduled days
+  const missingShorts = calendar.filter(c => c.status === 'scheduled' && !c.shortVideoId && c.day >= 6);
+  if (missingShorts.length > 0) {
+    console.log(`⚡ Found ${missingShorts.length} scheduled days missing companion Shorts. Prioritizing backfill: Days [${missingShorts.map(m => m.day).join(', ')}]`);
+    for (const item of missingShorts) {
+      console.log(`\n☁️ [Cloud Job] Producing missing companion Short for Day ${item.day}: ${item.title}`);
+      try {
+        execSync(`node scripts/produce-companion-short.js ${item.day}`, {
+          stdio: 'inherit',
+          cwd: path.join(__dirname, '..')
+        });
+        scheduledCount++;
+      } catch (err) {
+        console.error(`⚠️ Notice on Day ${item.day} Short:`, err.message);
+        if (err.message.includes('quotaExceeded') || err.message.includes('exceeded the number of videos')) {
+          console.log('Reached daily YouTube upload limit. Will resume on tomorrow’s cloud trigger.');
+          return;
+        } else {
+          encounteredErrors.push(`Day ${item.day} Short: ${err.message}`);
+        }
+      }
+    }
+    // Reload updated calendar
+    calendar = JSON.parse(await fs.readFile(calendarPath, 'utf8'));
+  }
+
   const pending = calendar.filter(c => c.status === 'pending');
   console.log(`📊 Total Days Programmed: ${calendar.length}`);
   console.log(`⏳ Pending Days to Schedule: ${pending.length}`);
@@ -114,9 +143,6 @@ async function run() {
   // Process next pending batch (up to 4-5 videos per cloud run to stay within daily quota)
   const batch = pending.slice(0, 5);
   console.log(`🚀 Processing Cloud Batch of ${batch.length} days: Days [${batch.map(b => b.day).join(', ')}]`);
-
-  let scheduledCount = 0;
-  let encounteredErrors = [];
 
   for (const item of batch) {
     console.log(`\n☁️ [Cloud Job] Producing & Scheduling Day ${item.day}: ${item.title}`);
