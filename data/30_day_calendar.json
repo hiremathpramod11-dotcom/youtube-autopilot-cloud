@@ -138,7 +138,8 @@
       "Kannada history",
       "Kannada facts"
     ],
-    "videoId": "iEzV2ebnn7o"
+    "videoId": "iEzV2ebnn7o",
+    "shortVideoId": "r_VxNeZVuWw"
   },
   {
     "day": 7,
@@ -163,7 +164,8 @@
       "Kannada history",
       "Kannada facts"
     ],
-    "videoId": "RTwCJJV6F60"
+    "videoId": "RTwCJJV6F60",
+    "shortVideoId": "a3aB_kvLkNY"
   },
   {
     "day": 8,
@@ -249,7 +251,8 @@
     "renderedVideo": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\data\\videos\\day_10_ready.mp4",
     "renderedThumbnail": "C:\\Users\\PRAMOD\\Downloads\\youtube-automation-agent-master\\youtube-automation-agent\\uploads\\thumbnails\\thumb_day_10.jpg",
     "isRendered": true,
-    "videoId": "jWpepquY5qc"
+    "videoId": "jWpepquY5qc",
+    "shortVideoId": "rya9AlXTBz8"
   },
   {
     "day": 11,
@@ -409,7 +412,7 @@
   },
   {
     "day": 17,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-07T12:30:00.000Z",
     "title": "ಶೃಂಗೇರಿ ವಿದ್ಯಾಶಂಕರ ದೇವಾಲಯದ 12 ರಾಶಿ ಸ್ತಂಭಗಳ ವಿಸ್ಮಯ! 😱☀️ | Sringeri 12 Zodiac Pillars",
     "wikiTitles": [
@@ -429,11 +432,13 @@
       "Karnataka mysteries",
       "Kannada history",
       "Kannada facts"
-    ]
+    ],
+    "shortVideoId": "i7REWVKCrCc",
+    "videoId": "yJFLJQjpYf4"
   },
   {
     "day": 18,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-08T12:30:00.000Z",
     "title": "ಕೊಡಗಿನ ಅಜೇಯ ಮಡಿಕೇರಿ ಕೋಟೆ ಮತ್ತು ವೀರ ಯೋಧರು! 🏰⚔️ | Madikeri Fort Coorg",
     "wikiTitles": [
@@ -453,11 +458,13 @@
       "Karnataka mysteries",
       "Kannada history",
       "Kannada facts"
-    ]
+    ],
+    "shortVideoId": "fJH8p80pz9I",
+    "videoId": "pt1S75KbL3Q"
   },
   {
     "day": 19,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-09T12:30:00.000Z",
     "title": "ಬೆಳಗಾವಿ ಕೋಟೆಯ ಕಮಲ ಬಸದಿ ಮತ್ತು ಭೂಗತ ರಹಸ್ಯಗಳು! 😱🏰 | Belgaum Fort Kamal Basti",
     "wikiTitles": [
@@ -477,11 +484,13 @@
       "Karnataka mysteries",
       "Kannada history",
       "Kannada facts"
-    ]
+    ],
+    "shortVideoId": "bUWSKks0p60",
+    "videoId": "OORTcvXBu5g"
   },
   {
     "day": 20,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-10T12:30:00.000Z",
     "title": "ಐಹೊಳೆಯ 120 ಪ್ರಾಚೀನ ಕಲ್ಲಿನ ದೇವಾಲಯಗಳ ರಹಸ್ಯ! 😱🏛️ | Aihole Temple Laboratory",
     "wikiTitles": [
@@ -501,7 +510,8 @@
       "Karnataka mysteries",
       "Kannada history",
       "Kannada facts"
-    ]
+    ],
+    "videoId": "7p9BMrosjVk"
   },
   {
     "day": 21,
