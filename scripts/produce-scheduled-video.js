@@ -36,13 +36,49 @@ async function fetchWikiImages(wikiTitles, outDir) {
     }
   }
 
-  // If no images returned, fall back to existing assets
-  if (images.length === 0) {
-    const defaultAssets = ['hampi.jpg', 'badami_cave_temples.jpg', 'belur__karnataka.jpg'];
-    for (const d of defaultAssets) {
-      const p = path.join(__dirname, '..', 'data', 'assets', d);
-      if (fsSync.existsSync(p)) images.push(p);
+  // If fewer than 4 images, fetch authentic high-res photos from Wikimedia Commons search
+  if (images.length < 4 && wikiTitles.length > 0) {
+    try {
+      const searchTerm = wikiTitles[0].replace(/_/g, ' ');
+      console.log(`🌐 Searching Wikimedia Commons for additional HD imagery: "${searchTerm}"...`);
+      const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchTerm)}&gsrnamespace=6&gsrlimit=8&prop=imageinfo&iiprop=url&iiurlwidth=1920&format=json`;
+      const commonsRes = await axios.get(commonsUrl, { headers: { 'User-Agent': WIKIPEDIA_USER_AGENT } });
+      const commonsPages = Object.values(commonsRes.data.query?.pages || {});
+
+      for (let j = 0; j < commonsPages.length && images.length < 6; j++) {
+        const info = commonsPages[j].imageinfo?.[0];
+        const imgUrl = info?.thumburl || info?.url;
+        if (imgUrl && !imgUrl.endsWith('.svg') && !imgUrl.endsWith('.ogg')) {
+          const imgPath = path.join(outDir, `commons_${j}.jpg`);
+          try {
+            await downloadImage(imgUrl, imgPath);
+            images.push(imgPath);
+          } catch (e) {
+            // ignore individual image download errors
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Commons search notice:', err.message);
     }
+  }
+
+  // Procedural cinematic background fallback if network has zero images
+  if (images.length === 0) {
+    console.log('🌌 Generating procedural dark cinematic HD visual backdrop...');
+    const fallbackPath = path.join(outDir, 'procedural_cinematic_bg.jpg');
+    const svgBg = `<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="deep" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stop-color="#181c30"/>
+          <stop offset="60%" stop-color="#0b0d18"/>
+          <stop offset="100%" stop-color="#020306"/>
+        </radialGradient>
+      </defs>
+      <rect width="1920" height="1080" fill="url(#deep)"/>
+    </svg>`;
+    await sharp(Buffer.from(svgBg)).jpeg({ quality: 95 }).toFile(fallbackPath);
+    images.push(fallbackPath);
   }
 
   return images;

@@ -1,11 +1,13 @@
-name: YouTube 365-Day Cloud Autopilot
+name: YouTube Perpetual Lifetime Cloud Autopilot
 
 on:
   schedule:
-    # Trigger 1: 12:45 PM IST (07:15 UTC) - avoids top-of-hour congestion
+    # Trigger 1: 12:45 PM IST (07:15 UTC) - primary daily production run
     - cron: '15 7 * * *'
     # Trigger 2: 5:15 PM IST (11:45 UTC) - secondary catch-up trigger
     - cron: '45 11 * * *'
+    # Trigger 3: 11:45 PM IST (18:15 UTC) - nighttime buffer builder trigger
+    - cron: '15 18 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI / mobile anytime
 
 jobs:
@@ -57,8 +59,15 @@ jobs:
         run: node scripts/cloud-runner.js
 
       - name: Commit and Push Calendar Updates
+        if: always()
         run: |
           git config --global user.name "Kannadiga369-CloudBot"
           git config --global user.email "bot@kannadiga369.com"
           git add data/30_day_calendar.json
           git diff --staged --quiet || (git commit -m "chore: updated YouTube cloud calendar state [skip ci]" && git push)
+
+      - name: Prevent GitHub From Disabling Workflow (Lifetime Keepalive)
+        uses: gautamkrishnar/keepalive-workflow@v2
+        if: always()
+        with:
+          commit_message: "chore: automated lifetime keepalive [skip ci]"
