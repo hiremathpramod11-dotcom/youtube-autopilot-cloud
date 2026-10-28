@@ -2,7 +2,8 @@ const { google } = require('googleapis');
 const fs = require('fs');
 const path = require('path');
 
-const basePath = 'C:/Users/PRAMOD/Downloads/youtube-automation-agent-master/youtube-automation-agent';
+const basePath = path.join(__dirname, '..', '..');
+require('dotenv').config({ path: path.join(basePath, '.env') });
 const creds = JSON.parse(fs.readFileSync(path.join(basePath, 'config/credentials.json'), 'utf8'));
 const tokens = JSON.parse(fs.readFileSync(path.join(basePath, 'config/tokens.json'), 'utf8'));
 
@@ -10,7 +11,7 @@ const auth = new google.auth.OAuth2(creds.youtube.client_id, creds.youtube.clien
 auth.setCredentials(tokens.youtube || tokens);
 const yt = google.youtube({ version: 'v3', auth });
 
-const STORE_URL = 'https://latinas-plastic-manitoba-handling.trycloudflare.com/';
+const STORE_URL = process.env.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/';
 const PROMO_HEADER = `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets!\n👉 Shop AquaFlow Direct: ${STORE_URL}\n(Cash on Delivery & PhonePe / GPay Accepted | 7-Day Replacement Guarantee)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 const PROMO_COMMENT = `🛍️ 🔥 FLASH SALE: Get Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart lifestyle inventions! 👉 ${STORE_URL} (Cash on Delivery & Instant UPI Accepted! Limited Stock Available 🛒👇)`;
 

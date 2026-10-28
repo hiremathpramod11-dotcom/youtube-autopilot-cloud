@@ -46,8 +46,8 @@ async function fetchWikiImages(wikiTitles, outDir) {
   return images;
 }
 
-async function generateGeminiAudio(text, outputPath) {
-  console.log('🎙️ Generating natural dramatic Kannada narration via Gemini TTS...');
+async function generateGeminiAudio(text, outputPath, voiceName = 'Fenrir') {
+  console.log(`🎙️ Generating natural dramatic narration via Gemini TTS (${voiceName})...`);
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-3.8-flash-tts',
@@ -57,7 +57,7 @@ async function generateGeminiAudio(text, outputPath) {
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
-            voiceName: 'Kore'
+            voiceName
           }
         }
       }
@@ -118,9 +118,12 @@ async function produceCompanionShort(targetDay) {
   const audioDir = path.join(__dirname, '..', 'data', 'audio');
   await fs.mkdir(audioDir, { recursive: true });
   const shortAudioPath = path.join(audioDir, `day_${entry.day}_short_narration.mp3`);
+  const isEnglish = (entry.day >= 21) || /^[A-Za-z0-9\s.,!?'"():|—–-]+$/.test(entry.title.substring(0, 30));
   const hookText = entry.hook || entry.title;
-  const shortNarration = `${hookText} ಪೂರ್ಣ ಆಘಾತಕಾರಿ ಸತ್ಯ ತಿಳಿಯಲು ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ!`;
-  await generateGeminiAudio(shortNarration, shortAudioPath);
+  const shortNarration = isEnglish
+    ? `${hookText} Subscribe to Kannadiga 369 for more mind-blowing discoveries, and check out today's trending viral gadgets in the comments below!`
+    : `${hookText} ಪೂರ್ಣ ಆಘಾತಕಾರಿ ಸತ್ಯ ತಿಳಿಯಲು ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ!`;
+  await generateGeminiAudio(shortNarration, shortAudioPath, isEnglish ? 'Fenrir' : 'Kore');
 
   const shortDur = await new Promise((resolve) => {
     const { exec } = require('child_process');
@@ -197,12 +200,18 @@ async function produceCompanionShort(targetDay) {
       part: ['snippet', 'status'],
       requestBody: {
         snippet: {
-          title: `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
-          description: `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook || entry.title}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
-          tags: ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
+          title: isEnglish
+            ? `${entry.title.substring(0, 50)}... 😱 #Shorts #Viral`
+            : `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
+          description: isEnglish
+            ? `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook || entry.title}\n\n#Shorts #ViralShorts #MindBlowing #Curiosity #ScienceFacts`
+            : `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook || entry.title}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
+          tags: isEnglish
+            ? ['Shorts', 'Viral Shorts', 'Mind Blowing', 'Unsolved Mysteries', 'Science Facts', 'Curiosities', 'Gadgets', ...(entry.tags || [])]
+            : ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
           categoryId: '27',
-          defaultLanguage: 'kn',
-          defaultAudioLanguage: 'kn'
+          defaultLanguage: isEnglish ? 'en' : 'kn',
+          defaultAudioLanguage: isEnglish ? 'en' : 'kn'
         },
         status: {
           privacyStatus: 'private',

@@ -14,33 +14,51 @@ async function autoExpandCalendar(calendar) {
   const pending = calendar.filter(c => c.status === 'pending');
   if (pending.length >= 10) return calendar;
 
-  console.log('⚡ Pending queue is low. Auto-generating next 15 days of Karnataka content via Gemini...');
+  console.log('⚡ Pending queue is low. Auto-generating next 10 days of Worldwide Viral Mysteries content via AI...');
   const lastDay = calendar[calendar.length - 1]?.day || 30;
   const lastDate = new Date(calendar[calendar.length - 1]?.scheduledDate || new Date());
 
-  const prompt = `You are a senior YouTube content director for a Kannada infotainment channel '@Kannadiga_369'.
-Generate 10 new high-curiosity video topics about Karnataka history, mysteries, architecture, unsolved legends, or ancient empires.
+  const prompt = `You are a senior YouTube content director for a viral global infotainment & science mysteries channel.
+Generate 10 new high-curiosity, worldwide viral video topics (in the cinematic storytelling style of Aperture, What If, Thoughty2, and Kurzgesagt).
+Topics MUST be in English and cover:
+- Cosmic "What If" scenarios (e.g. rogue black holes, sun disappearing, alternate physics)
+- Deep ocean abyss mysteries & strange marine discoveries
+- Ancient engineering enigmas & megalithic anomalies (Pyramids, Baalbek, Göbekli Tepe, sunken cities)
+- Unsolved scientific paradoxes, acoustic phenomena, or mysterious classified expeditions
+
 Return ONLY a valid JSON array of objects with this schema:
 [
   {
-    "title": "Shocking Kannada Title with emojis (under 80 chars)",
-    "topic": "Brief English topic summary",
-    "wikiTitles": ["WikipediaPageTitle1", "WikipediaPageTitle2"],
-    "hook": "Compelling 3-sentence Kannada hook asking a question and promising answers",
+    "title": "Compelling High-CTR English Title with emojis (under 80 chars)",
+    "topic": "Brief topic summary",
+    "wikiTitles": ["ValidWikipediaPage1", "ValidWikipediaPage2", "ValidWikipediaPage3"],
+    "hook": "Gripping 3-sentence English hook presenting an unbelievable paradox or question and promising answers",
     "sections": [
       {
         "title": "1. Section Heading",
-        "narration": "Detailed storytelling narration in Kannada explaining the history and mystery."
+        "narration": "Detailed dramatic storytelling narration in English explaining the science, theories, and mystery."
+      },
+      {
+        "title": "2. Section Heading",
+        "narration": "Detailed dramatic storytelling narration in English."
+      },
+      {
+        "title": "3. Section Heading",
+        "narration": "Detailed dramatic storytelling narration in English."
+      },
+      {
+        "title": "4. Section Heading",
+        "narration": "Detailed dramatic storytelling narration in English."
       }
     ],
-    "tags": ["Karnataka mysteries", "Kannadiga 369", "Kannada history"]
+    "tags": ["World Mysteries", "Science Facts", "Mind Blowing", "Unsolved Mysteries", "Aperture", "What If"]
   }
 ]`;
 
   try {
     let text;
     if (process.env.OPENROUTER_API_KEY) {
-      console.log('🤖 Using OpenRouter Llama 3.3 70B for high-depth Kannada script generation...');
+      console.log('🤖 Using OpenRouter Llama 3.3 70B for high-depth global script generation...');
       const axios = require('axios');
       const orRes = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: 'meta-llama/llama-3.3-70b-instruct',
@@ -74,10 +92,10 @@ Return ONLY a valid JSON array of objects with this schema:
         scheduledDate: nextDate,
         title: t.title,
         topic: t.topic,
-        wikiTitles: t.wikiTitles || ['Karnataka'],
+        wikiTitles: t.wikiTitles || ['Mariana_Trench', 'Universe'],
         hook: t.hook,
         sections: t.sections || [],
-        tags: t.tags || ['Kannadiga 369', 'Karnataka mysteries']
+        tags: t.tags || ['World Mysteries', 'Science Facts', 'Unsolved Mysteries', 'Mind Blowing', 'Curiosities']
       });
     }
 

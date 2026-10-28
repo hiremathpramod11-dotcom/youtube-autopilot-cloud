@@ -48,8 +48,8 @@ async function fetchWikiImages(wikiTitles, outDir) {
   return images;
 }
 
-async function generateGeminiAudio(text, outputPath) {
-  console.log('🎙️ Generating natural dramatic Kannada narration via Gemini TTS...');
+async function generateGeminiAudio(text, outputPath, voiceName = 'Fenrir') {
+  console.log(`🎙️ Generating natural dramatic narration via Gemini TTS (${voiceName})...`);
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-3.8-flash-tts',
@@ -58,7 +58,7 @@ async function generateGeminiAudio(text, outputPath) {
       responseModalities: ['AUDIO'],
       speechConfig: {
         voiceConfig: {
-          prebuiltVoiceConfig: { voiceName: 'Puck' }
+          prebuiltVoiceConfig: { voiceName }
         }
       }
     }
@@ -112,7 +112,7 @@ async function renderKenBurnsClip(imagePath, durationSeconds, motionType, output
   ]);
 }
 
-async function createMasterThumbnail(bgImagePath, headline, badge, outputPath) {
+async function createMasterThumbnail(bgImagePath, headline, badge, outputPath, footerText = '🔴 GLOBAL CURIOSITIES • UNSOLVED MYSTERY') {
   console.log('🎨 Generating high-CTR Master YouTube Thumbnail...');
   const buffer = await fs.readFile(bgImagePath);
 
@@ -144,7 +144,7 @@ async function createMasterThumbnail(bgImagePath, headline, badge, outputPath) {
 
       <g filter="url(#shadow)">
         <rect x="50" y="595" width="640" height="65" rx="16" fill="rgba(15, 15, 25, 0.92)" stroke="#FFAA00" stroke-width="3"/>
-        <text x="75" y="638" font-family="Arial, sans-serif" font-size="28" font-weight="800" fill="#FFAA00">🔴 KANNADIGA 369 • HISTORICAL MYSTERY</text>
+        <text x="75" y="638" font-family="Arial, sans-serif" font-size="28" font-weight="800" fill="#FFAA00">${footerText}</text>
       </g>
 
       <g filter="url(#shadow)">
@@ -190,16 +190,21 @@ async function produceScheduledVideo(targetDay) {
   console.log(`✓ Fetched ${images.length} HD authentic images`);
 
   // 2. Build Narration
+  const isEnglish = (entry.day >= 21) || /^[A-Za-z0-9\s.,!?'"():|—–-]+$/.test(entry.title.substring(0, 30));
+  const closingCTA = isEnglish
+    ? "Which of these mind-blowing mysteries surprised you the most? Share your thoughts in the comments below! Don't forget to like and subscribe for more extraordinary discoveries, and check out today's trending viral gadgets in the pinned comment!"
+    : "ಕರುನಾಡಿನ ಈ ಅಪ್ರತಿಮ ರಹಸ್ಯದಲ್ಲಿ ನಿಮಗೆ ಅತ್ಯಂತ ರೋಮಾಂಚನ ತಂದ ವಿಷಯ ಯಾವುದು? ತಪ್ಪದೆ ಕಾಮೆಂಟ್ ಮಾಡಿ! ಇಂತಹ ಮತ್ತಷ್ಟು ರೋಚಕ ಐತಿಹಾಸಿಕ ವಿಡಿಯೋಗಳಿಗಾಗಿ ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್‌ಗೆ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ! ಜೈ ಕರ್ನಾಟಕ ಮಾತೆ!";
+
   const fullNarration = [
     entry.hook,
     ...entry.sections.map(s => `${s.title}\n${s.narration}`),
-    'ಕರುನಾಡಿನ ಈ ಅಪ್ರತಿಮ ರಹಸ್ಯದಲ್ಲಿ ನಿಮಗೆ ಅತ್ಯಂತ ರೋಮಾಂಚನ ತಂದ ವಿಷಯ ಯಾವುದು? ತಪ್ಪದೆ ಕಾಮೆಂಟ್ ಮಾಡಿ! ಇಂತಹ ಮತ್ತಷ್ಟು ರೋಚಕ ಐತಿಹಾಸಿಕ ವಿಡಿಯೋಗಳಿಗಾಗಿ ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್‌ಗೆ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ! ಜೈ ಕರ್ನಾಟಕ ಮಾತೆ!'
+    closingCTA
   ].join('\n\n');
 
   const audioDir = path.join(__dirname, '..', 'data', 'audio');
   await fs.mkdir(audioDir, { recursive: true });
   const audioPath = path.join(audioDir, `day_${entry.day}_narration.mp3`);
-  await generateGeminiAudio(fullNarration, audioPath);
+  await generateGeminiAudio(fullNarration, audioPath, isEnglish ? 'Fenrir' : 'Puck');
 
   const duration = await new Promise((resolve) => {
     const { exec } = require('child_process');
@@ -275,13 +280,24 @@ async function produceScheduledVideo(targetDay) {
   await fs.mkdir(path.dirname(thumbPath), { recursive: true });
 
   const words = (entry.title || '').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 0);
-  const headline = [
-    words.slice(0, 2).join(' ') || 'ಕರ್ನಾಟಕದ',
-    words.slice(2, 4).join(' ') || 'ಬೆಚ್ಚಿಬೀಳಿಸುವ',
-    words.slice(4, 7).join(' ') || 'ನಿಗೂಢ ರಹಸ್ಯ!'
-  ];
-  const badge = `🚩 DAY ${entry.day} • ${entry.topic || 'ರಹಸ್ಯ ಇತಿಹಾಸ'}`.substring(0, 32);
-  await createMasterThumbnail(images[0], headline, badge, thumbPath);
+  const headline = isEnglish
+    ? [
+        words.slice(0, 3).join(' ').toUpperCase() || 'UNSOLVED',
+        words.slice(3, 6).join(' ').toUpperCase() || 'WORLD MYSTERY',
+        words.slice(6, 9).join(' ').toUpperCase() || 'EXPLAINED!'
+      ]
+    : [
+        words.slice(0, 2).join(' ') || 'ಕರ್ನಾಟಕದ',
+        words.slice(2, 4).join(' ') || 'ಬೆಚ್ಚಿಬೀಳಿಸುವ',
+        words.slice(4, 7).join(' ') || 'ನಿಗೂಢ ರಹಸ್ಯ!'
+      ];
+  const badge = isEnglish
+    ? `🔥 ${entry.topic || 'GLOBAL DISCOVERY'}`.toUpperCase().substring(0, 30)
+    : `🚩 DAY ${entry.day} • ${entry.topic || 'ರಹಸ್ಯ ಇತಿಹಾಸ'}`.substring(0, 30);
+  const footerText = isEnglish
+    ? '🔴 GLOBAL CURIOSITIES • UNSOLVED MYSTERY'
+    : '🔴 KANNADIGA 369 • HISTORICAL MYSTERY';
+  await createMasterThumbnail(images[0], headline, badge, thumbPath, footerText);
 
   // 7. Upload to YouTube with native Cloud Scheduling (`publishAt`)
   console.log(`📤 Uploading to YouTube Cloud Scheduled for: ${entry.scheduledDate}...`);
@@ -289,16 +305,20 @@ async function produceScheduledVideo(targetDay) {
   const storeUrl = process.env.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/';
   const promoBlock = `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets!\n👉 Shop AquaFlow Direct: ${storeUrl}\n(Cash on Delivery & PhonePe / GPay Accepted | 7-Day Guarantee)\n\n`;
 
+  const tags = isEnglish
+    ? [...(entry.tags || []), 'World Mysteries', 'Science Facts', 'Unsolved Mysteries', 'Mind Blowing', 'AquaFlow Direct', 'Aperture', 'What If']
+    : (entry.tags || []);
+
   const uploadRes = await yt.videos.insert({
     part: ['snippet', 'status'],
     requestBody: {
       snippet: {
         title: entry.title,
-        description: `${promoBlock}${entry.title} | Kannadiga 369\n\n${entry.hook}\n\n#Kannadiga369 #KarnatakaMysteries #KannadaHistory`,
-        tags: entry.tags,
+        description: `${promoBlock}${entry.title} | Kannadiga 369\n\n${entry.hook}\n\n#WorldMysteries #ScienceFacts #UnsolvedMysteries #ViralTech`,
+        tags,
         categoryId: '27',
-        defaultLanguage: 'kn',
-        defaultAudioLanguage: 'kn'
+        defaultLanguage: isEnglish ? 'en' : 'kn',
+        defaultAudioLanguage: isEnglish ? 'en' : 'kn'
       },
       status: {
         privacyStatus: 'private',
@@ -353,8 +373,10 @@ async function produceScheduledVideo(targetDay) {
   try {
     console.log(`🎬 Producing Companion Viral YouTube Short for Day ${entry.day}...`);
     const shortAudioPath = path.join(audioDir, `day_${entry.day}_short_narration.mp3`);
-    const shortNarration = `${entry.hook} ಪೂರ್ಣ ಆಘಾತಕಾರಿ ಸತ್ಯ ತಿಳಿಯಲು ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ!`;
-    await generateGeminiAudio(shortNarration, shortAudioPath);
+    const shortNarration = isEnglish
+      ? `${entry.hook} Subscribe for more extraordinary discoveries, and check out today's trending viral gadgets in the comments below!`
+      : `${entry.hook} ಪೂರ್ಣ ಆಘಾತಕಾರಿ ಸತ್ಯ ತಿಳಿಯಲು ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ!`;
+    await generateGeminiAudio(shortNarration, shortAudioPath, isEnglish ? 'Fenrir' : 'Puck');
 
     const shortDur = await new Promise((resolve) => {
       const { exec } = require('child_process');
@@ -419,12 +441,18 @@ async function produceScheduledVideo(targetDay) {
       part: ['snippet', 'status'],
       requestBody: {
         snippet: {
-          title: `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
-          description: `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
-          tags: ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
+          title: isEnglish
+            ? `${entry.title.substring(0, 50)}... 😱 #Shorts #Viral`
+            : `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
+          description: isEnglish
+            ? `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #ViralShorts #MindBlowing #Curiosity #ScienceFacts`
+            : `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
+          tags: isEnglish
+            ? ['Shorts', 'Viral Shorts', 'Mind Blowing', 'Unsolved Mysteries', 'Science Facts', 'Curiosities', 'Gadgets', ...(entry.tags || [])]
+            : ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
           categoryId: '27',
-          defaultLanguage: 'kn',
-          defaultAudioLanguage: 'kn'
+          defaultLanguage: isEnglish ? 'en' : 'kn',
+          defaultAudioLanguage: isEnglish ? 'en' : 'kn'
         },
         status: {
           privacyStatus: 'private',
@@ -440,6 +468,26 @@ async function produceScheduledVideo(targetDay) {
     const shortId = shortUpload.data.id;
     console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortId}`);
     entry.shortVideoId = shortId;
+
+    // Post dropshipping promotional pinned comment on short
+    try {
+      await yt.commentThreads.insert({
+        part: ['snippet'],
+        requestBody: {
+          snippet: {
+            videoId: shortId,
+            topLevelComment: {
+              snippet: {
+                textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart lifestyle inventions! 👉 ${storeUrl} (Cash on Delivery & PhonePe / GPay Accepted! Limited Stock Available 🛒👇)`
+              }
+            }
+          }
+        }
+      });
+      console.log('✅ Short promotional pinned comment posted!');
+    } catch (cErr) {
+      console.warn('Short comment notice:', cErr.message);
+    }
   } catch (shortErr) {
     console.warn('Companion short notice:', shortErr.message);
   }
