@@ -147,40 +147,46 @@ async function autoExpandCalendar(calendar) {
   const lastDay = calendar[calendar.length - 1]?.day || 34;
   const lastDate = new Date(calendar[calendar.length - 1]?.scheduledDate || new Date());
 
-  const prompt = `You are a senior YouTube content director for a viral global infotainment & science mysteries channel.
-Generate 10 new high-curiosity, worldwide viral video topics (in the cinematic storytelling style of Aperture, What If, Thoughty2, and Kurzgesagt).
+  const prompt = `You are the lead executive writer for the legendary global channels Aperture, What If, and Thoughty2.
+Your goal is to engineer 10 viral video scripts that mirror the exact narrative depth, existential tension, and curiosity triggers of Aperture and What If.
+
 Topics MUST be in English and cover:
-- Cosmic "What If" simulations (e.g. Earth without gravity, moon falling, rogue planets, collision with Andromeda)
-- Deep ocean abyss mysteries, Mariana trench discoveries & bizarre marine phenomena
-- Ancient engineering enigmas & megalithic precision masonry (Pyramids, Baalbek, Göbekli Tepe, Tiwanaku, underwater ruins)
-- Unsolved scientific paradoxes, quantum anomalies, acoustic phenomena, or classified expeditions
+- Cosmic "What If" simulations (e.g. Earth without gravity, rogue black hole inbound, collision with Andromeda)
+- Deep ocean abyss mysteries & bizarre marine anomalies
+- Ancient engineering enigmas & megalithic precision masonry (Great Pyramid Muon Void, Baalbek, Göbekli Tepe, Tiwanaku)
+- Unsolved scientific paradoxes, quantum anomalies, or classified acoustic phenomena
+
+Narrative Rules (The Aperture Blueprint):
+1. Zero Greetings: Never start with "Hello", "Welcome", or "In this video". Start immediately with the mind-bending reality.
+2. High Stakes & Scale: Constantly contrast human scale with cosmic or geological scale.
+3. Open Loops: Pose questions that force the viewer to watch till the final second.
 
 Return ONLY a valid JSON array of objects with this schema:
 [
   {
-    "title": "Compelling High-CTR English Title with emojis (under 80 chars)",
+    "title": "Aperture-style Provocative Title (under 75 chars, maximum 1 subtle emoji)",
     "topic": "Brief topic summary",
     "wikiTitles": ["ValidWikipediaPage1", "ValidWikipediaPage2", "ValidWikipediaPage3"],
-    "hook": "Gripping 3-sentence English hook presenting an unbelievable paradox or question and promising answers",
+    "hook": "Aperture-style Existential Hook: 3 gripping sentences posing a profound question that challenges reality",
     "sections": [
       {
         "title": "1. Section Heading",
-        "narration": "Detailed dramatic storytelling narration in English explaining the science, theories, and mystery."
+        "narration": "Deep, atmospheric, cinematic storytelling explaining the science, theory, and unsolved paradox."
       },
       {
         "title": "2. Section Heading",
-        "narration": "Detailed dramatic storytelling narration in English."
+        "narration": "Detailed storytelling exploring the anomalies and data."
       },
       {
         "title": "3. Section Heading",
-        "narration": "Detailed dramatic storytelling narration in English."
+        "narration": "Deepening the mystery with historical or scientific evidence."
       },
       {
         "title": "4. Section Heading",
-        "narration": "Detailed dramatic storytelling narration in English."
+        "narration": "Mind-bending philosophical conclusion leaving the audience in awe."
       }
     ],
-    "tags": ["World Mysteries", "Science Facts", "Mind Blowing", "Unsolved Mysteries", "Aperture", "What If"]
+    "tags": ["Aperture", "What If", "Science Documentary", "World Mysteries", "Unsolved Mysteries", "Cosmology"]
   }
 ]`;
 

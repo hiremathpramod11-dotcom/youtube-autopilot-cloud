@@ -159,56 +159,68 @@ async function renderKenBurnsClip(imagePath, durationSeconds, motionType, output
   ]);
 }
 
-async function createMasterThumbnail(bgImagePath, headline, badge, outputPath, footerText = '🔴 GLOBAL CURIOSITIES • UNSOLVED MYSTERY') {
-  console.log('🎨 Generating high-CTR Master YouTube Thumbnail...');
+async function createMasterThumbnail(bgImagePath, headline, badge, outputPath, footerText = 'APERTURE SPEC • GLOBAL MYSTERIES') {
+  console.log('🎨 Generating Aperture/What If-style Master YouTube Thumbnail...');
   const buffer = await fs.readFile(bgImagePath);
 
   const svgOverlay = `
     <svg width="1280" height="720" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <radialGradient id="glow" cx="35%" cy="50%" r="65%">
-          <stop offset="0%" stop-color="rgba(255, 140, 0, 0.4)"/>
-          <stop offset="60%" stop-color="rgba(0, 0, 0, 0.65)"/>
-          <stop offset="100%" stop-color="rgba(0, 0, 0, 0.95)"/>
+        <radialGradient id="apertureVignette" cx="65%" cy="45%" r="75%">
+          <stop offset="0%" stop-color="rgba(0, 0, 0, 0.15)"/>
+          <stop offset="55%" stop-color="rgba(5, 8, 18, 0.70)"/>
+          <stop offset="100%" stop-color="rgba(2, 3, 8, 0.96)"/>
         </radialGradient>
-        <filter id="shadow">
-          <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.95"/>
+
+        <linearGradient id="neonGold" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#FFE600"/>
+          <stop offset="100%" stop-color="#FF9900"/>
+        </linearGradient>
+
+        <filter id="heavyShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="1"/>
         </filter>
       </defs>
 
-      <rect width="1280" height="720" fill="url(#glow)"/>
+      <rect width="1280" height="720" fill="url(#apertureVignette)"/>
 
-      <g filter="url(#shadow)">
-        <rect x="50" y="45" width="480" height="60" rx="30" fill="#E60000" />
-        <text x="75" y="86" font-family="Arial, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF">${badge}</text>
+      <!-- Sleek Aperture Category Tag -->
+      <g filter="url(#heavyShadow)">
+        <rect x="60" y="50" width="420" height="42" rx="8" fill="rgba(10, 15, 28, 0.88)" stroke="#FF9900" stroke-width="2"/>
+        <circle cx="82" cy="71" r="5" fill="#FF3333"/>
+        <text x="100" y="77" font-family="'Arial Black', Impact, sans-serif" font-size="18" font-weight="900" fill="#FFFFFF" letter-spacing="3">${badge}</text>
       </g>
 
-      <g filter="url(#shadow)">
-        <text x="50" y="235" font-family="Arial, sans-serif" font-size="90" font-weight="900" fill="#FFE500">${headline[0] || 'ಕರ್ನಾಟಕದ'}</text>
-        <text x="50" y="335" font-family="Arial, sans-serif" font-size="90" font-weight="900" fill="#FFFFFF">${headline[1] || 'ಬೆಚ್ಚಿಬೀಳಿಸುವ'}</text>
-        <text x="50" y="435" font-family="Arial, sans-serif" font-size="84" font-weight="900" fill="#00FFCC">${headline[2] || 'ನಿಗೂಢ ರಹಸ್ಯ!'}</text>
+      <!-- Bold Aperture / What If Typography -->
+      <g filter="url(#heavyShadow)">
+        <text x="60" y="240" font-family="'Arial Black', Impact, sans-serif" font-size="90" font-weight="900" fill="#FFFFFF" letter-spacing="1">${headline[0] || 'UNSOLVED'}</text>
+        <text x="60" y="345" font-family="'Arial Black', Impact, sans-serif" font-size="92" font-weight="900" fill="url(#neonGold)" letter-spacing="1">${headline[1] || 'WORLD MYSTERY'}</text>
+        <text x="60" y="445" font-family="'Arial Black', Impact, sans-serif" font-size="80" font-weight="900" fill="#00E5FF" letter-spacing="1">${headline[2] || 'EXPLAINED'}</text>
       </g>
 
-      <g filter="url(#shadow)">
-        <rect x="50" y="595" width="640" height="65" rx="16" fill="rgba(15, 15, 25, 0.92)" stroke="#FFAA00" stroke-width="3"/>
-        <text x="75" y="638" font-family="Arial, sans-serif" font-size="28" font-weight="800" fill="#FFAA00">${footerText}</text>
+      <!-- Minimalist Cinematic Tech Crosshair -->
+      <g opacity="0.75" filter="url(#heavyShadow)">
+        <circle cx="1080" cy="360" r="140" fill="none" stroke="#FFCC00" stroke-width="3" stroke-dasharray="12, 12"/>
+        <line x1="1080" y1="200" x2="1080" y2="520" stroke="#FFCC00" stroke-width="2" stroke-dasharray="8, 8"/>
+        <line x1="920" y1="360" x2="1240" y2="360" stroke="#FFCC00" stroke-width="2" stroke-dasharray="8, 8"/>
+        <circle cx="1080" cy="360" r="8" fill="#FF3333"/>
       </g>
 
-      <g filter="url(#shadow)">
-        <circle cx="1040" cy="360" r="185" fill="none" stroke="#E60000" stroke-width="10" stroke-dasharray="16, 12"/>
-        <text x="970" y="385" font-family="Arial, sans-serif" font-size="84" font-weight="900" fill="#E60000">😱</text>
+      <!-- Bottom Cinematic Watermark -->
+      <g filter="url(#heavyShadow)">
+        <text x="60" y="655" font-family="'Arial Black', Impact, sans-serif" font-size="22" font-weight="800" fill="#AAAAAA" letter-spacing="4">${footerText}</text>
       </g>
     </svg>
   `;
 
   await sharp(buffer)
     .resize(1280, 720, { fit: 'cover', position: 'center' })
-    .modulate({ brightness: 0.92, saturation: 1.35 })
+    .modulate({ brightness: 0.90, saturation: 1.40 })
     .composite([{ input: Buffer.from(svgOverlay), blend: 'over' }])
     .jpeg({ quality: 95 })
     .toFile(outputPath);
 
-  console.log('✓ Master Thumbnail created:', outputPath);
+  console.log('✓ Master Aperture-Style Thumbnail created:', outputPath);
 }
 
 async function getYouTubeClient() {
@@ -339,10 +351,10 @@ async function produceScheduledVideo(targetDay) {
         words.slice(4, 7).join(' ') || 'ನಿಗೂಢ ರಹಸ್ಯ!'
       ];
   const badge = isEnglish
-    ? `🔥 ${entry.topic || 'GLOBAL DISCOVERY'}`.toUpperCase().substring(0, 30)
+    ? `${(entry.topic || 'GLOBAL DISCOVERY').toUpperCase().substring(0, 26)} • UNSOLVED`
     : `🚩 DAY ${entry.day} • ${entry.topic || 'ರಹಸ್ಯ ಇತಿಹಾಸ'}`.substring(0, 30);
   const footerText = isEnglish
-    ? '🔴 GLOBAL CURIOSITIES • UNSOLVED MYSTERY'
+    ? 'APERTURE SPEC • GLOBAL MYSTERIES'
     : '🔴 KANNADIGA 369 • HISTORICAL MYSTERY';
   await createMasterThumbnail(images[0], headline, badge, thumbPath, footerText);
 

@@ -250,15 +250,15 @@ async function produceCompanionShort(targetDay) {
       requestBody: {
         snippet: {
           title: isEnglish
-            ? `${entry.title.substring(0, 50)}... 😱 #Shorts #Viral`
+            ? `${entry.title.substring(0, 55)} #Shorts #Technology`
             : `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
           description: isEnglish
-            ? `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook || entry.title}\n\n#Shorts #ViralShorts #MindBlowing #Curiosity #ScienceFacts`
+            ? `🛍️ Trending Viral Inventions (Flat 50% OFF + Free Express Delivery): ${storeUrl}\n\n${entry.hook || entry.title}\n\n#Shorts #TechZone #ViralTech #Inventions #SmartGadgets #ScienceFacts`
             : `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook || entry.title}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
           tags: isEnglish
-            ? ['Shorts', 'Viral Shorts', 'Mind Blowing', 'Unsolved Mysteries', 'Science Facts', 'Curiosities', 'Gadgets', ...(entry.tags || [])]
+            ? ['Shorts', 'Viral Inventions', 'TechZone', 'Quantum Tech HD', 'Smart Gadgets', 'Satisfying Tech', 'Technology', 'Science Facts', ...(entry.tags || [])]
             : ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
-          categoryId: '27',
+          categoryId: '28',
           defaultLanguage: isEnglish ? 'en' : 'kn',
           defaultAudioLanguage: isEnglish ? 'en' : 'kn'
         },
