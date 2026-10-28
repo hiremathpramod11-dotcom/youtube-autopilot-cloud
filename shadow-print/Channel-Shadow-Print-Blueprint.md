@@ -259,3 +259,29 @@ flowchart LR
 4. **Suspense Music Ducking (`volume=0.12`)**: Keeps the suspense pad perfectly audible in the background without overlapping vocal frequencies.
 5. **Output Bitrate**: Upgraded from 192 kbps to **256 kbps AAC** for transparent high-fidelity audio.
 
+---
+
+## 11. Permanent System Resilience & Failure Mitigation Architecture
+
+To guarantee perpetual, zero-crash execution across both local Windows workstations and GitHub Actions cloud runners, the system enforces the following five resilience protocols:
+
+```mermaid
+graph TD
+    Trigger["Cloud / Local Autopilot Trigger"] --> CheckRender["Check Pre-Rendered Media Cache\n(Reuse MP4 if previously rendered)"]
+    CheckRender --> TTS["Multi-Tier TTS Engine\n(Gemini 3.8 Flash -> Christopher -> Guy)"]
+    TTS --> Render["Lossless CRF 18 Film-Graded Render"]
+    Render --> Upload["YouTube Cloud Upload"]
+    Upload -->|Upload Limit / Quota Exceeded| SafePreserve["Safe Cache State & Graceful Exit\n(Preserve MP4 in Calendar, Exit 0)"]
+    Upload -->|Success| Clean["Wipe Temp Cache & Auto-Persist Tokens"]
+    Upload -->|Token Expired| AutoRefresh["Google OAuth auth.on('tokens')\n(Auto-Persist Refreshed Tokens)"]
+```
+
+| Failure Mode | Root Cause | Permanent Resolution |
+|---|---|---|
+| **OAuth Token Desync** | Expired access tokens or new refresh tokens not saved to disk | Added `auth.on('tokens', ...)` in `getYouTubeClient()`. Refreshed tokens automatically written to `config/tokens.json`. |
+| **YouTube 400 Upload Limit** | Channel 10 video/day limit reached | Handled `uploadLimitExceeded` / `quotaExceeded`. The rendered 1080p video is saved to `entry.preRenderedVideo` and exited cleanly with code 0. On quota reset, uploads directly without re-rendering. |
+| **TTS API Rate Limits (429)** | Gemini Free Tier 10 req/day cap | Built automated 3-tier fallback: `gemini-3.8-flash-tts` (`Fenrir`) $\rightarrow$ Neural Edge-TTS (`en-US-ChristopherNeural`) $\rightarrow$ Neural Edge-TTS (`en-US-GuyNeural`). |
+| **Linux/Windows Python Command** | Ubuntu uses `python3`, Windows uses `python` | Dynamic binary detection: `process.platform === 'win32' ? 'python' : (existsSync('/usr/bin/python3') ? 'python3' : 'python')` + `python-is-python3` in CI. |
+| **Git Push Divergence in CI** | Concurrent commits causing non-fast-forward push rejection | Added `git pull --rebase origin main \|\| git rebase --abort` prior to pushing in `.github/workflows/youtube-30day-autopilot.yml`. |
+
+
