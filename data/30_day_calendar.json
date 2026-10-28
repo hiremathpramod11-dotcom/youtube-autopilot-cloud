@@ -594,7 +594,7 @@
   },
   {
     "day": 24,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-14T12:30:00.000Z",
     "title": "The Terrifying Secrets Hidden at the Bottom of the Mariana Trench! 😱🌊 | Deep Ocean Abyss",
     "topic": "Mariana Trench Deep Abyss Mysteries",
@@ -631,7 +631,8 @@
       "Unsolved Mysteries",
       "Abyss",
       "What If"
-    ]
+    ],
+    "videoId": "UejpFjLRp5c"
   },
   {
     "day": 25,

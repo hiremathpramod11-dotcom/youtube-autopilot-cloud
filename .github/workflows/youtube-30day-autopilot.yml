@@ -28,8 +28,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install FFmpeg in Cloud
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install FFmpeg and Neural TTS in Cloud
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg python3-pip
+          pip install edge-tts --break-system-packages || pip install edge-tts
 
       - name: Restore Cloud Credentials from GitHub Secrets
         env:

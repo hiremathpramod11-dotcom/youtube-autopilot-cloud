@@ -85,45 +85,56 @@ async function fetchWikiImages(wikiTitles, outDir) {
 }
 
 async function generateGeminiAudio(text, outputPath, voiceName = 'Fenrir') {
-  console.log(`🎙️ Generating natural dramatic narration via Gemini TTS (${voiceName})...`);
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.8-flash-tts',
-    contents: [{ parts: [{ text }] }],
-    config: {
-      responseModalities: ['AUDIO'],
-      speechConfig: {
-        voiceConfig: {
-          prebuiltVoiceConfig: {
-            voiceName
+  try {
+    console.log(`🎙️ Generating natural dramatic narration via Gemini TTS (${voiceName})...`);
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash-tts',
+      contents: [{ parts: [{ text }] }],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName
+            }
           }
         }
       }
+    });
+
+    const part = response.candidates?.[0]?.content?.parts?.[0];
+    if (!part?.inlineData?.data) {
+      throw new Error('TTS returned no audio data');
     }
-  });
 
-  const part = response.candidates?.[0]?.content?.parts?.[0];
-  if (!part?.inlineData?.data) {
-    throw new Error('TTS returned no audio data');
+    const pcmBuffer = Buffer.from(part.inlineData.data, 'base64');
+    const tempPcm = outputPath.replace('.mp3', '.pcm');
+    await fs.writeFile(tempPcm, pcmBuffer);
+
+    await runFFmpeg([
+      '-y',
+      '-f', 's16le',
+      '-ar', '24000',
+      '-ac', '1',
+      '-i', tempPcm,
+      '-c:a', 'libmp3lame',
+      '-b:a', '192k',
+      outputPath
+    ]);
+
+    try { await fs.unlink(tempPcm); } catch (e) {}
+    return outputPath;
+  } catch (err) {
+    console.warn(`⚠️ Gemini TTS notice: ${err.message}. Activating Neural Edge-TTS fallback (Christopher)...`);
+    const textFile = outputPath.replace('.mp3', '_input.txt');
+    await fs.writeFile(textFile, text, 'utf8');
+    const { execSync } = require('child_process');
+    execSync(`python -m edge_tts --voice en-US-ChristopherNeural --file "${textFile}" --write-media "${outputPath}"`);
+    await fs.unlink(textFile).catch(() => {});
+    console.log('✓ Neural Edge-TTS narration generated successfully!');
+    return outputPath;
   }
-
-  const pcmBuffer = Buffer.from(part.inlineData.data, 'base64');
-  const tempPcm = outputPath.replace('.mp3', '.pcm');
-  await fs.writeFile(tempPcm, pcmBuffer);
-
-  await runFFmpeg([
-    '-y',
-    '-f', 's16le',
-    '-ar', '24000',
-    '-ac', '1',
-    '-i', tempPcm,
-    '-c:a', 'libmp3lame',
-    '-b:a', '192k',
-    outputPath
-  ]);
-
-  try { await fs.unlink(tempPcm); } catch (e) {}
-  return outputPath;
 }
 
 async function getYouTubeClient() {
