@@ -286,13 +286,15 @@ async function produceScheduledVideo(targetDay) {
   // 7. Upload to YouTube with native Cloud Scheduling (`publishAt`)
   console.log(`📤 Uploading to YouTube Cloud Scheduled for: ${entry.scheduledDate}...`);
   const yt = await getYouTubeClient();
+  const storeUrl = process.env.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/';
+  const promoBlock = `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets!\n👉 Shop AquaFlow Direct: ${storeUrl}\n(Cash on Delivery & PhonePe / GPay Accepted | 7-Day Guarantee)\n\n`;
 
   const uploadRes = await yt.videos.insert({
     part: ['snippet', 'status'],
     requestBody: {
       snippet: {
         title: entry.title,
-        description: `${entry.title} | Kannadiga 369\n\n${entry.hook}\n\n#Kannadiga369 #KarnatakaMysteries #KannadaHistory`,
+        description: `${promoBlock}${entry.title} | Kannadiga 369\n\n${entry.hook}\n\n#Kannadiga369 #KarnatakaMysteries #KannadaHistory`,
         tags: entry.tags,
         categoryId: '27',
         defaultLanguage: 'kn',
@@ -323,6 +325,26 @@ async function produceScheduledVideo(targetDay) {
       }
     });
     console.log('✅ Custom thumbnail applied successfully!');
+
+    // Post dropshipping promotional pinned comment
+    try {
+      await yt.commentThreads.insert({
+        part: ['snippet'],
+        requestBody: {
+          snippet: {
+            videoId,
+            topLevelComment: {
+              snippet: {
+                textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart home inventions! 👉 ${storeUrl} (Cash on Delivery & PhonePe / GPay Accepted! Limited Stock Available 🛒👇)`
+              }
+            }
+          }
+        }
+      });
+      console.log('✅ Dropshipping promotional pinned comment posted!');
+    } catch (commErr) {
+      console.warn('Comment post notice:', commErr.message);
+    }
   } catch (err) {
     console.warn('Thumbnail set warning:', err.message);
   }
@@ -398,7 +420,7 @@ async function produceScheduledVideo(targetDay) {
       requestBody: {
         snippet: {
           title: `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
-          description: `${entry.hook}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
+          description: `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
           tags: ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
           categoryId: '27',
           defaultLanguage: 'kn',

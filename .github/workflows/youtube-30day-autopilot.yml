@@ -53,6 +53,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PROMOTIONAL_STORE_URL: ${{ secrets.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/' }}
         run: node scripts/cloud-runner.js
 
       - name: Commit and Push Calendar Updates

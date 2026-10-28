@@ -192,12 +192,13 @@ async function produceCompanionShort(targetDay) {
 
   const yt = await getYouTubeClient();
   try {
+    const storeUrl = process.env.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/';
     const shortUpload = await yt.videos.insert({
       part: ['snippet', 'status'],
       requestBody: {
         snippet: {
           title: `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
-          description: `${entry.hook || entry.title}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
+          description: `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook || entry.title}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
           tags: ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
           categoryId: '27',
           defaultLanguage: 'kn',
@@ -216,6 +217,25 @@ async function produceCompanionShort(targetDay) {
 
     const shortId = shortUpload.data.id;
     console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortId}`);
+
+    try {
+      await yt.commentThreads.insert({
+        part: ['snippet'],
+        requestBody: {
+          snippet: {
+            videoId: shortId,
+            topLevelComment: {
+              snippet: {
+                textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart lifestyle inventions! 👉 ${storeUrl} (COD & UPI Accepted! Limited Stock Available 🛒👇)`
+              }
+            }
+          }
+        }
+      });
+      console.log('✅ Short promotional pinned comment posted!');
+    } catch (cErr) {
+      console.warn('Short comment notice:', cErr.message);
+    }
 
     entry.shortVideoId = shortId;
     await fs.writeFile(calendarPath, JSON.stringify(calendar, null, 2), 'utf8');
