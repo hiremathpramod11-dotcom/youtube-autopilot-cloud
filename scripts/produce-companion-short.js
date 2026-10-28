@@ -279,11 +279,17 @@ async function generateGeminiAudio(text, outputPath, voiceName = 'Fenrir') {
     try { await fs.unlink(tempPcm); } catch (e) {}
     return outputPath;
   } catch (err) {
-    console.warn(`⚠️ Gemini TTS notice: ${err.message}. Activating Neural Edge-TTS fallback (Christopher)...`);
+    console.warn(`⚠️ Gemini TTS notice: ${err.message}. Activating Neural Edge-TTS fallback...`);
     const textFile = outputPath.replace('.mp3', '_input.txt');
     await fs.writeFile(textFile, text, 'utf8');
     const { execSync } = require('child_process');
-    execSync(`python -m edge_tts --voice en-US-ChristopherNeural --file "${textFile}" --write-media "${outputPath}"`);
+    const pyCmd = process.platform === 'win32' ? 'python' : (fsSync.existsSync('/usr/bin/python3') ? 'python3' : 'python');
+    try {
+      execSync(`${pyCmd} -m edge_tts --voice en-US-ChristopherNeural --file "${textFile}" --write-media "${outputPath}"`);
+    } catch (e1) {
+      console.warn('Edge-TTS primary voice notice. Retrying with GuyNeural fallback...');
+      execSync(`${pyCmd} -m edge_tts --voice en-US-GuyNeural --file "${textFile}" --write-media "${outputPath}"`);
+    }
     await fs.unlink(textFile).catch(() => {});
     console.log('✓ Neural Edge-TTS narration generated successfully!');
     return outputPath;
@@ -291,10 +297,25 @@ async function generateGeminiAudio(text, outputPath, voiceName = 'Fenrir') {
 }
 
 async function getYouTubeClient() {
-  const tokenData = JSON.parse(await fs.readFile(path.join(__dirname, '..', 'config', 'tokens.json'), 'utf8'));
+  const tokenPath = path.join(__dirname, '..', 'config', 'tokens.json');
+  const tokenData = JSON.parse(await fs.readFile(tokenPath, 'utf8'));
   const creds = JSON.parse(await fs.readFile(path.join(__dirname, '..', 'config', 'credentials.json'), 'utf8'));
   const auth = new google.auth.OAuth2(creds.youtube.client_id, creds.youtube.client_secret);
   auth.setCredentials(tokenData.youtube || tokenData);
+
+  auth.on('tokens', async (tokens) => {
+    try {
+      const current = JSON.parse(await fs.readFile(tokenPath, 'utf8'));
+      const updated = current.youtube
+        ? { ...current, youtube: { ...current.youtube, ...tokens } }
+        : { ...current, ...tokens };
+      await fs.writeFile(tokenPath, JSON.stringify(updated, null, 2), 'utf8');
+      console.log('🔄 OAuth tokens automatically refreshed and saved to tokens.json');
+    } catch (e) {
+      console.warn('Notice saving refreshed token:', e.message);
+    }
+  });
+
   return google.youtube({ version: 'v3', auth });
 }
 
@@ -313,79 +334,88 @@ async function produceCompanionShort(targetDay) {
   console.log(`🎬 PRODUCING COMPANION SHORT: DAY ${entry.day} - ${entry.title}`);
   console.log('═'.repeat(65));
 
-  const assetDir = path.join(__dirname, '..', 'data', 'assets', `day_${entry.day}`);
-  const { images, videos } = await fetchVisualAssets(entry.topic || entry.title, entry.wikiTitles || ['Universe'], assetDir);
-  console.log(`✓ Fetched ${images.length} HD photos and ${videos.length} motion video B-roll clips`);
-
   const audioDir = path.join(__dirname, '..', 'data', 'audio');
-  await fs.mkdir(audioDir, { recursive: true });
-  const shortAudioPath = path.join(audioDir, `day_${entry.day}_short_narration.mp3`);
-  const isEnglish = (entry.day >= 21) || /^[A-Za-z0-9\s.,!?'"():|—–-]+$/.test(entry.title.substring(0, 30));
-  const hookText = entry.hook || entry.title;
-  const shortNarration = isEnglish
-    ? `${hookText} Subscribe to Kannadiga 369 for more mind-blowing discoveries, and check out today's trending viral gadgets in the comments below!`
-    : `${hookText} ಪೂರ್ಣ ಆಘಾತಕಾರಿ ಸತ್ಯ ತಿಳಿಯಲು ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ!`;
-  await generateGeminiAudio(shortNarration, shortAudioPath, isEnglish ? 'Fenrir' : 'Kore');
-
-  const shortDur = await new Promise((resolve) => {
-    const { exec } = require('child_process');
-    exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${shortAudioPath}"`, (err, stdout) => {
-      resolve(parseFloat(stdout) || 35);
-    });
-  });
-
+  const videosDir = path.join(__dirname, '..', 'data', 'videos');
   const tempDir = path.join(__dirname, '..', 'temp', `short_day_${entry.day}_${Date.now()}`);
-  await fs.mkdir(tempDir, { recursive: true });
-  const shortClipsDir = path.join(tempDir, 'short_clips');
-  await fs.mkdir(shortClipsDir, { recursive: true });
+  await fs.mkdir(audioDir, { recursive: true });
+  await fs.mkdir(videosDir, { recursive: true });
 
-  const shortTotalClips = 6;
-  const shortClipDur = shortDur / shortTotalClips;
-  const shortClipPaths = [];
+  let finalShortVideo = entry.preRenderedShort && fsSync.existsSync(entry.preRenderedShort) ? entry.preRenderedShort : null;
+  const isEnglish = (entry.day >= 21) || /^[A-Za-z0-9\s.,!?'"():|—–-]+$/.test(entry.title.substring(0, 30));
 
-  for (let i = 0; i < shortTotalClips; i++) {
-    let mediaFile;
-    if (videos.length > 0 && i % 3 === 1) {
-      mediaFile = videos[i % videos.length];
-    } else {
-      mediaFile = images[i % images.length];
+  if (!finalShortVideo) {
+    const assetDir = path.join(__dirname, '..', 'data', 'assets', `day_${entry.day}`);
+    const { images, videos } = await fetchVisualAssets(entry.topic || entry.title, entry.wikiTitles || ['Universe'], assetDir);
+    console.log(`✓ Fetched ${images.length} HD photos and ${videos.length} motion video B-roll clips`);
+
+    const shortAudioPath = path.join(audioDir, `day_${entry.day}_short_narration.mp3`);
+    const hookText = entry.hook || entry.title;
+    const shortNarration = isEnglish
+      ? `${hookText} Subscribe to Kannadiga 369 for more mind-blowing discoveries, and check out today's trending viral gadgets in the comments below!`
+      : `${hookText} ಪೂರ್ಣ ಆಘಾತಕಾರಿ ಸತ್ಯ ತಿಳಿಯಲು ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ!`;
+    await generateGeminiAudio(shortNarration, shortAudioPath, isEnglish ? 'Fenrir' : 'Kore');
+
+    const shortDur = await new Promise((resolve) => {
+      const { exec } = require('child_process');
+      exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${shortAudioPath}"`, (err, stdout) => {
+        resolve(parseFloat(stdout) || 35);
+      });
+    });
+
+    await fs.mkdir(tempDir, { recursive: true });
+    const shortClipsDir = path.join(tempDir, 'short_clips');
+    await fs.mkdir(shortClipsDir, { recursive: true });
+
+    const shortTotalClips = 6;
+    const shortClipDur = shortDur / shortTotalClips;
+    const shortClipPaths = [];
+
+    for (let i = 0; i < shortTotalClips; i++) {
+      let mediaFile;
+      if (videos.length > 0 && i % 3 === 1) {
+        mediaFile = videos[i % videos.length];
+      } else {
+        mediaFile = images[i % images.length];
+      }
+
+      const sOut = path.join(shortClipsDir, `sclip_${i}.mp4`);
+      const motion = i % 2 === 0 ? 'push' : 'pull';
+      await renderCinematicScene(mediaFile, shortClipDur, motion, sOut, true);
+      shortClipPaths.push(sOut);
     }
 
-    const sOut = path.join(shortClipsDir, `sclip_${i}.mp4`);
-    const motion = i % 2 === 0 ? 'push' : 'pull';
-    await renderCinematicScene(mediaFile, shortClipDur, motion, sOut, true);
-    shortClipPaths.push(sOut);
+    const sConcat = path.join(shortClipsDir, 'sconcat.txt');
+    await fs.writeFile(sConcat, shortClipPaths.map(p => `file '${p.replace(/\\/g, '/')}'`).join('\n'), 'utf8');
+    const sRaw = path.join(shortClipsDir, 'sraw.mp4');
+    await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', sConcat, '-c', 'copy', sRaw]);
+
+    const candidateBg1 = path.join(__dirname, '..', 'assets', 'audio', 'cinematic_suspense.mp3');
+    const candidateBg2 = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
+    const bgMusicPath = fsSync.existsSync(candidateBg1) ? candidateBg1 : (fsSync.existsSync(candidateBg2) ? candidateBg2 : null);
+
+    const sMixedAudio = path.join(shortClipsDir, 'smixed.m4a');
+    await mixMasterAudio(shortAudioPath, bgMusicPath, sMixedAudio, true);
+
+    finalShortVideo = path.join(videosDir, `day_${entry.day}_short_${Date.now()}.mp4`);
+    await runFFmpeg([
+      '-y', '-i', sRaw, '-i', sMixedAudio,
+      '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-shortest',
+      finalShortVideo
+    ]);
+  } else {
+    console.log(`⚡ Reusing existing pre-rendered Short: ${finalShortVideo}`);
   }
-
-  const sConcat = path.join(shortClipsDir, 'sconcat.txt');
-  await fs.writeFile(sConcat, shortClipPaths.map(p => `file '${p.replace(/\\/g, '/')}'`).join('\n'), 'utf8');
-  const sRaw = path.join(shortClipsDir, 'sraw.mp4');
-  await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', sConcat, '-c', 'copy', sRaw]);
-
-  const candidateBg1 = path.join(__dirname, '..', 'assets', 'audio', 'cinematic_suspense.mp3');
-  const candidateBg2 = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
-  const bgMusicPath = fsSync.existsSync(candidateBg1) ? candidateBg1 : (fsSync.existsSync(candidateBg2) ? candidateBg2 : null);
-
-  const sMixedAudio = path.join(shortClipsDir, 'smixed.m4a');
-  await mixMasterAudio(shortAudioPath, bgMusicPath, sMixedAudio, true);
-
-  const videosDir = path.join(__dirname, '..', 'data', 'videos');
-  await fs.mkdir(videosDir, { recursive: true });
-  const finalShortVideo = path.join(videosDir, `day_${entry.day}_short_${Date.now()}.mp4`);
-  await runFFmpeg([
-    '-y', '-i', sRaw, '-i', sMixedAudio,
-    '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-shortest',
-    finalShortVideo
-  ]);
 
   // Schedule short 4.5 hours earlier than long-form (1:30 PM IST / 08:00 UTC)
   const shortDate = new Date(new Date(entry.scheduledDate).getTime() - (4.5 * 60 * 60 * 1000)).toISOString();
   console.log(`📤 Uploading Companion Short scheduled for ${shortDate}...`);
 
   const yt = await getYouTubeClient();
+  const storeUrl = process.env.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/';
+
+  let shortUpload;
   try {
-    const storeUrl = process.env.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/';
-    const shortUpload = await yt.videos.insert({
+    shortUpload = await yt.videos.insert({
       part: ['snippet', 'status'],
       requestBody: {
         snippet: {
@@ -412,38 +442,49 @@ async function produceCompanionShort(targetDay) {
         body: fsSync.createReadStream(finalShortVideo)
       }
     });
-
-    const shortId = shortUpload.data.id;
-    console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortId}`);
-
-    try {
-      await yt.commentThreads.insert({
-        part: ['snippet'],
-        requestBody: {
-          snippet: {
-            videoId: shortId,
-            topLevelComment: {
-              snippet: {
-                textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart lifestyle inventions! 👉 ${storeUrl} (COD & UPI Accepted! Limited Stock Available 🛒👇)`
-              }
-            }
-          }
-        }
-      });
-      console.log('✅ Short promotional pinned comment posted!');
-    } catch (cErr) {
-      console.warn('Short comment notice:', cErr.message);
-    }
-
-    entry.shortVideoId = shortId;
-    await fs.writeFile(calendarPath, JSON.stringify(calendar, null, 2), 'utf8');
-
-    return shortId;
   } catch (err) {
     const errMsg = err.response?.data?.error?.message || err.message;
+    const isLimit = errMsg.includes('exceeded the number of videos') ||
+                    errMsg.includes('uploadLimitExceeded') ||
+                    errMsg.includes('quotaExceeded');
+    if (isLimit) {
+      console.warn(`⏳ YouTube upload limit reached for Day ${entry.day} Short (${errMsg}).`);
+      console.log(`💾 Preserving rendered Short (${finalShortVideo}) for next upload window.`);
+      entry.preRenderedShort = finalShortVideo;
+      await fs.writeFile(calendarPath, JSON.stringify(calendar, null, 2), 'utf8');
+      return { status: 'quota_reached', day: entry.day, short: finalShortVideo };
+    }
     console.error(`❌ Upload failed for Day ${entry.day} Short: ${errMsg}`);
     throw new Error(errMsg);
   }
+
+  const shortId = shortUpload.data.id;
+  delete entry.preRenderedShort;
+  console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortId}`);
+
+  try {
+    await yt.commentThreads.insert({
+      part: ['snippet'],
+      requestBody: {
+        snippet: {
+          videoId: shortId,
+          topLevelComment: {
+            snippet: {
+              textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart lifestyle inventions! 👉 ${storeUrl} (COD & UPI Accepted! Limited Stock Available 🛒👇)`
+            }
+          }
+        }
+      }
+    });
+    console.log('✅ Short promotional pinned comment posted!');
+  } catch (cErr) {
+    console.warn('Short comment notice:', cErr.message);
+  }
+
+  entry.shortVideoId = shortId;
+  await fs.writeFile(calendarPath, JSON.stringify(calendar, null, 2), 'utf8');
+
+  return shortId;
 }
 
 module.exports = { produceCompanionShort };

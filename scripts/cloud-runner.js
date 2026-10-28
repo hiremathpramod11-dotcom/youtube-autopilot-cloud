@@ -293,7 +293,7 @@ async function run() {
         scheduledCount++;
       } catch (err) {
         console.error(`⚠️ Notice on Day ${item.day} Short:`, err.message);
-        if (err.message.includes('quotaExceeded') || err.message.includes('exceeded the number of videos')) {
+        if (err.message.includes('quotaExceeded') || err.message.includes('exceeded the number of videos') || err.message.includes('uploadLimitExceeded')) {
           console.log('Reached daily YouTube upload limit. Will resume on next cloud trigger.');
           quotaReached = true;
           break;
@@ -301,12 +301,18 @@ async function run() {
           encounteredErrors.push(`Day ${item.day} Short: ${err.message}`);
         }
       }
+
+      calendar = JSON.parse(await fs.readFile(calendarPath, 'utf8'));
+      if (calendar.find(c => c.day === item.day)?.preRenderedShort) {
+        console.log(`⏳ Day ${item.day} Short reached upload limit and is pre-rendered for next window.`);
+        quotaReached = true;
+        break;
+      }
     }
-    calendar = JSON.parse(await fs.readFile(calendarPath, 'utf8'));
   }
 
   if (quotaReached) {
-    console.log('Daily YouTube upload quota reached. Safe exit; will resume tomorrow.');
+    console.log('Daily YouTube upload quota reached. Safe exit; will resume on next scheduled trigger.');
     return;
   }
 
@@ -330,17 +336,23 @@ async function run() {
         stdio: 'inherit',
         cwd: path.join(__dirname, '..')
       });
-      console.log(`✅ Day ${item.day} successfully scheduled into YouTube Cloud!`);
       scheduledCount++;
     } catch (err) {
       console.error(`⚠️ Notice on Day ${item.day}:`, err.message);
-      if (err.message.includes('quotaExceeded') || err.message.includes('exceeded the number of videos')) {
+      if (err.message.includes('quotaExceeded') || err.message.includes('exceeded the number of videos') || err.message.includes('uploadLimitExceeded')) {
         console.log('Reached daily YouTube upload limit. Next batch will run on tomorrow’s cloud trigger.');
         quotaReached = true;
         break;
       } else {
         encounteredErrors.push(`Day ${item.day}: ${err.message}`);
       }
+    }
+
+    calendar = JSON.parse(await fs.readFile(calendarPath, 'utf8'));
+    if (calendar.find(c => c.day === item.day)?.preRenderedVideo) {
+      console.log(`⏳ Day ${item.day} Long-Form reached upload limit and is pre-rendered for next window.`);
+      quotaReached = true;
+      break;
     }
   }
 

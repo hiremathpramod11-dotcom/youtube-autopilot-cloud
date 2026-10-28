@@ -183,11 +183,17 @@ async function generateGeminiAudio(text, outputPath, voiceName = 'Fenrir') {
     await fs.unlink(tempPcm).catch(() => {});
     return outputPath;
   } catch (err) {
-    console.warn(`⚠️ Gemini TTS notice: ${err.message}. Activating Neural Edge-TTS fallback (Christopher)...`);
+    console.warn(`⚠️ Gemini TTS notice: ${err.message}. Activating Neural Edge-TTS fallback...`);
     const textFile = outputPath.replace('.mp3', '_input.txt');
     await fs.writeFile(textFile, text, 'utf8');
     const { execSync } = require('child_process');
-    execSync(`python -m edge_tts --voice en-US-ChristopherNeural --file "${textFile}" --write-media "${outputPath}"`);
+    const pyCmd = process.platform === 'win32' ? 'python' : (fsSync.existsSync('/usr/bin/python3') ? 'python3' : 'python');
+    try {
+      execSync(`${pyCmd} -m edge_tts --voice en-US-ChristopherNeural --file "${textFile}" --write-media "${outputPath}"`);
+    } catch (e1) {
+      console.warn('Edge-TTS primary voice notice. Retrying with GuyNeural fallback...');
+      execSync(`${pyCmd} -m edge_tts --voice en-US-GuyNeural --file "${textFile}" --write-media "${outputPath}"`);
+    }
     await fs.unlink(textFile).catch(() => {});
     console.log('✓ Neural Edge-TTS narration generated successfully!');
     return outputPath;
@@ -356,10 +362,25 @@ async function createMasterThumbnail(bgImagePath, headline, badge, outputPath, f
 }
 
 async function getYouTubeClient() {
-  const tokenData = JSON.parse(await fs.readFile(path.join(__dirname, '..', 'config', 'tokens.json'), 'utf8'));
+  const tokenPath = path.join(__dirname, '..', 'config', 'tokens.json');
+  const tokenData = JSON.parse(await fs.readFile(tokenPath, 'utf8'));
   const creds = JSON.parse(await fs.readFile(path.join(__dirname, '..', 'config', 'credentials.json'), 'utf8'));
   const auth = new google.auth.OAuth2(creds.youtube.client_id, creds.youtube.client_secret);
   auth.setCredentials(tokenData.youtube || tokenData);
+
+  auth.on('tokens', async (tokens) => {
+    try {
+      const current = JSON.parse(await fs.readFile(tokenPath, 'utf8'));
+      const updated = current.youtube
+        ? { ...current, youtube: { ...current.youtube, ...tokens } }
+        : { ...current, ...tokens };
+      await fs.writeFile(tokenPath, JSON.stringify(updated, null, 2), 'utf8');
+      console.log('🔄 OAuth tokens automatically refreshed and saved to tokens.json');
+    } catch (e) {
+      console.warn('Notice saving refreshed token:', e.message);
+    }
+  });
+
   return google.youtube({ version: 'v3', auth });
 }
 
@@ -370,116 +391,132 @@ async function produceScheduledVideo(targetDay) {
   const entry = calendar.find(c => c.day === targetDay);
   if (!entry) throw new Error(`Day ${targetDay} not found in calendar`);
 
+  if (entry.status === 'scheduled' && entry.videoId) {
+    console.log(`Day ${targetDay} is already scheduled in YouTube Cloud: ${entry.videoId}`);
+    return { videoId: entry.videoId, title: entry.title, scheduledDate: entry.scheduledDate };
+  }
+
   console.log('\n' + '═'.repeat(65));
   console.log(`🚀 AUTONOMOUS PRODUCTION: DAY ${entry.day} - ${entry.topic}`);
   console.log(`   Scheduled Release: ${entry.scheduledDate}`);
   console.log('═'.repeat(65));
 
-  // 1. Fetch visual assets (HD photos + authentic motion video B-roll)
-  const assetDir = path.join(__dirname, '..', 'data', 'assets', `day_${entry.day}`);
-  const { images, videos } = await fetchVisualAssets(entry.topic, entry.wikiTitles || [], assetDir);
-  console.log(`✓ Fetched ${images.length} HD photos and ${videos.length} motion video B-roll clips`);
-
-  // 2. Build Narration
   const isEnglish = (entry.day >= 21) || /^[A-Za-z0-9\s.,!?'"():|—–-]+$/.test(entry.title.substring(0, 30));
-  const closingCTA = isEnglish
-    ? "Which of these mind-blowing mysteries surprised you the most? Share your thoughts in the comments below! Don't forget to like and subscribe for more extraordinary discoveries, and check out today's trending viral gadgets in the pinned comment!"
-    : "ಕರುನಾಡಿನ ಈ ಅಪ್ರತಿಮ ರಹಸ್ಯದಲ್ಲಿ ನಿಮಗೆ ಅತ್ಯಂತ ರೋಮಾಂಚನ ತಂದ ವಿಷಯ ಯಾವುದು? ತಪ್ಪದೆ ಕಾಮೆಂಟ್ ಮಾಡಿ! ಇಂತಹ ಮತ್ತಷ್ಟು ರೋಚಕ ಐತಿಹಾಸಿಕ ವಿಡಿಯೋಗಳಿಗಾಗಿ ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್‌ಗೆ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ! ಜೈ ಕರ್ನಾಟಕ ಮಾತೆ!";
-
-  const fullNarration = [
-    entry.hook,
-    ...entry.sections.map(s => `${s.title}\n${s.narration}`),
-    closingCTA
-  ].join('\n\n');
-
   const audioDir = path.join(__dirname, '..', 'data', 'audio');
-  await fs.mkdir(audioDir, { recursive: true });
-  const audioPath = path.join(audioDir, `day_${entry.day}_narration.mp3`);
-  await generateGeminiAudio(fullNarration, audioPath, isEnglish ? 'Fenrir' : 'Puck');
-
-  const duration = await new Promise((resolve) => {
-    const { exec } = require('child_process');
-    exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${audioPath}"`, (err, stdout) => {
-      resolve(parseFloat(stdout) || 120);
-    });
-  });
-  console.log(`✓ Narration Duration: ${duration.toFixed(1)} seconds`);
-
-  // 3. Render High-Fidelity Cinematic Scenes (CRF 18 Film Grade, dynamic cuts)
+  const videosDir = path.join(__dirname, '..', 'data', 'videos');
   const tempDir = path.join(__dirname, '..', 'temp', `clips_day_${entry.day}_${Date.now()}`);
-  await fs.mkdir(tempDir, { recursive: true });
+  await fs.mkdir(audioDir, { recursive: true });
+  await fs.mkdir(videosDir, { recursive: true });
 
-  const totalClips = 16;
-  const clipDur = duration / totalClips;
-  const clipPaths = [];
-  const motions = ['push', 'pull', 'pan'];
+  let finalVideo = entry.preRenderedVideo && fsSync.existsSync(entry.preRenderedVideo) ? entry.preRenderedVideo : null;
+  let thumbPath = entry.preRenderedThumb && fsSync.existsSync(entry.preRenderedThumb) ? entry.preRenderedThumb : null;
+  let images = [];
+  let videos = [];
 
-  for (let i = 0; i < totalClips; i++) {
-    // Interleave authentic motion video B-roll with Ken Burns stills
-    let mediaFile;
-    if (videos.length > 0 && (i % 4 === 1 || i % 4 === 3)) {
-      mediaFile = videos[Math.floor(i / 4) % videos.length];
-    } else {
-      mediaFile = images[i % images.length];
+  if (!finalVideo) {
+    // 1. Fetch visual assets (HD photos + authentic motion video B-roll)
+    const assetDir = path.join(__dirname, '..', 'data', 'assets', `day_${entry.day}`);
+    const assets = await fetchVisualAssets(entry.topic, entry.wikiTitles || [], assetDir);
+    images = assets.images;
+    videos = assets.videos;
+    console.log(`✓ Fetched ${images.length} HD photos and ${videos.length} motion video B-roll clips`);
+
+    // 2. Build Narration
+    const closingCTA = isEnglish
+      ? "Which of these mind-blowing mysteries surprised you the most? Share your thoughts in the comments below! Don't forget to like and subscribe for more extraordinary discoveries, and check out today's trending viral gadgets in the pinned comment!"
+      : "ಕರುನಾಡಿನ ಈ ಅಪ್ರತಿಮ ರಹಸ್ಯದಲ್ಲಿ ನಿಮಗೆ ಅತ್ಯಂತ ರೋಮಾಂಚನ ತಂದ ವಿಷಯ ಯಾವುದು? ತಪ್ಪದೆ ಕಾಮೆಂಟ್ ಮಾಡಿ! ಇಂತಹ ಮತ್ತಷ್ಟು ರೋಚಕ ಐತಿಹಾಸಿಕ ವಿಡಿಯೋಗಳಿಗಾಗಿ ಈಗಲೇ ನಮ್ಮ Kannadiga 369 ಚಾನೆಲ್‌ಗೆ ಸಬ್‌ಸ್ಕ್ರೈಬ್ ಮಾಡಿ! ಜೈ ಕರ್ನಾಟಕ ಮಾತೆ!";
+
+    const fullNarration = [
+      entry.hook,
+      ...entry.sections.map(s => `${s.title}\n${s.narration}`),
+      closingCTA
+    ].join('\n\n');
+
+    const audioPath = path.join(audioDir, `day_${entry.day}_narration.mp3`);
+    await generateGeminiAudio(fullNarration, audioPath, isEnglish ? 'Fenrir' : 'Puck');
+
+    const duration = await new Promise((resolve) => {
+      const { exec } = require('child_process');
+      exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${audioPath}"`, (err, stdout) => {
+        resolve(parseFloat(stdout) || 120);
+      });
+    });
+    console.log(`✓ Narration Duration: ${duration.toFixed(1)} seconds`);
+
+    // 3. Render High-Fidelity Cinematic Scenes (CRF 18 Film Grade, dynamic cuts)
+    await fs.mkdir(tempDir, { recursive: true });
+
+    const totalClips = 16;
+    const clipDur = duration / totalClips;
+    const clipPaths = [];
+    const motions = ['push', 'pull', 'pan'];
+
+    for (let i = 0; i < totalClips; i++) {
+      let mediaFile;
+      if (videos.length > 0 && (i % 4 === 1 || i % 4 === 3)) {
+        mediaFile = videos[Math.floor(i / 4) % videos.length];
+      } else {
+        mediaFile = images[i % images.length];
+      }
+
+      const out = path.join(tempDir, `clip_${String(i).padStart(3, '0')}.mp4`);
+      await renderCinematicScene(mediaFile, clipDur, motions[i % motions.length], out, false);
+      clipPaths.push(out);
     }
 
-    const out = path.join(tempDir, `clip_${String(i).padStart(3, '0')}.mp4`);
-    await renderCinematicScene(mediaFile, clipDur, motions[i % motions.length], out, false);
-    clipPaths.push(out);
+    const concatList = path.join(tempDir, 'concat.txt');
+    await fs.writeFile(concatList, clipPaths.map(p => `file '${p.replace(/\\/g, '/')}'`).join('\n'), 'utf8');
+
+    const rawVisual = path.join(tempDir, 'raw_visual.mp4');
+    await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', concatList, '-c', 'copy', rawVisual]);
+
+    // 4. Mix Mastered Vocal & Suspense Audio (Broadcast -16 LUFS, Ducking, 256k AAC)
+    const candidateBg1 = path.join(__dirname, '..', 'assets', 'audio', 'cinematic_suspense.mp3');
+    const candidateBg2 = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
+    const bgMusicPath = fsSync.existsSync(candidateBg1) ? candidateBg1 : (fsSync.existsSync(candidateBg2) ? candidateBg2 : null);
+    const mixedAudio = path.join(tempDir, 'mixed_audio.m4a');
+    await mixMasterAudio(audioPath, bgMusicPath, mixedAudio, false);
+
+    // 5. Final Subtitle-Free Lossless Video
+    finalVideo = path.join(videosDir, `day_${entry.day}_final_${Date.now()}.mp4`);
+    await runFFmpeg([
+      '-y',
+      '-i', rawVisual,
+      '-i', mixedAudio,
+      '-c:v', 'copy',
+      '-c:a', 'aac',
+      '-b:a', '256k',
+      '-shortest',
+      finalVideo
+    ]);
+    console.log('✓ Clean Lossless Aperture-Spec Video Produced:', finalVideo);
+
+    // 6. Thumbnail
+    thumbPath = path.join(__dirname, '..', 'uploads', 'thumbnails', `thumb_day_${entry.day}.jpg`);
+    await fs.mkdir(path.dirname(thumbPath), { recursive: true });
+
+    const words = (entry.title || '').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 0);
+    const headline = isEnglish
+      ? [
+          words.slice(0, 3).join(' ').toUpperCase() || 'UNSOLVED',
+          words.slice(3, 6).join(' ').toUpperCase() || 'WORLD MYSTERY',
+          words.slice(6, 9).join(' ').toUpperCase() || 'EXPLAINED!'
+        ]
+      : [
+          words.slice(0, 2).join(' ') || 'ಕರ್ನಾಟಕದ',
+          words.slice(2, 4).join(' ') || 'ಬೆಚ್ಚಿಬೀಳಿಸುವ',
+          words.slice(4, 7).join(' ') || 'ನಿಗೂಢ ರಹಸ್ಯ!'
+        ];
+    const badge = isEnglish
+      ? `${(entry.topic || 'GLOBAL DISCOVERY').toUpperCase().substring(0, 26)} • UNSOLVED`
+      : `🚩 DAY ${entry.day} • ${entry.topic || 'ರಹಸ್ಯ ಇತಿಹಾಸ'}`.substring(0, 30);
+    const footerText = isEnglish
+      ? 'APERTURE SPEC • GLOBAL MYSTERIES'
+      : '🔴 KANNADIGA 369 • HISTORICAL MYSTERY';
+    await createMasterThumbnail(images[0] || finalVideo, headline, badge, thumbPath, footerText);
+  } else {
+    console.log(`⚡ Reusing existing pre-rendered video: ${finalVideo}`);
   }
-
-  const concatList = path.join(tempDir, 'concat.txt');
-  await fs.writeFile(concatList, clipPaths.map(p => `file '${p.replace(/\\/g, '/')}'`).join('\n'), 'utf8');
-
-  const rawVisual = path.join(tempDir, 'raw_visual.mp4');
-  await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', concatList, '-c', 'copy', rawVisual]);
-
-  // 4. Mix Mastered Vocal & Suspense Audio (Broadcast -16 LUFS, Ducking, 256k AAC)
-  const candidateBg1 = path.join(__dirname, '..', 'assets', 'audio', 'cinematic_suspense.mp3');
-  const candidateBg2 = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
-  const bgMusicPath = fsSync.existsSync(candidateBg1) ? candidateBg1 : (fsSync.existsSync(candidateBg2) ? candidateBg2 : null);
-  const mixedAudio = path.join(tempDir, 'mixed_audio.m4a');
-  await mixMasterAudio(audioPath, bgMusicPath, mixedAudio, false);
-
-  // 5. Final Subtitle-Free Lossless Video
-  const videosDir = path.join(__dirname, '..', 'data', 'videos');
-  await fs.mkdir(videosDir, { recursive: true });
-  const finalVideo = path.join(videosDir, `day_${entry.day}_final_${Date.now()}.mp4`);
-  await runFFmpeg([
-    '-y',
-    '-i', rawVisual,
-    '-i', mixedAudio,
-    '-c:v', 'copy',
-    '-c:a', 'aac',
-    '-b:a', '256k',
-    '-shortest',
-    finalVideo
-  ]);
-  console.log('✓ Clean Lossless Aperture-Spec Video Produced:', finalVideo);
-
-  // 6. Thumbnail
-  const thumbPath = path.join(__dirname, '..', 'uploads', 'thumbnails', `thumb_day_${entry.day}.jpg`);
-  await fs.mkdir(path.dirname(thumbPath), { recursive: true });
-
-  const words = (entry.title || '').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 0);
-  const headline = isEnglish
-    ? [
-        words.slice(0, 3).join(' ').toUpperCase() || 'UNSOLVED',
-        words.slice(3, 6).join(' ').toUpperCase() || 'WORLD MYSTERY',
-        words.slice(6, 9).join(' ').toUpperCase() || 'EXPLAINED!'
-      ]
-    : [
-        words.slice(0, 2).join(' ') || 'ಕರ್ನಾಟಕದ',
-        words.slice(2, 4).join(' ') || 'ಬೆಚ್ಚಿಬೀಳಿಸುವ',
-        words.slice(4, 7).join(' ') || 'ನಿಗೂಢ ರಹಸ್ಯ!'
-      ];
-  const badge = isEnglish
-    ? `${(entry.topic || 'GLOBAL DISCOVERY').toUpperCase().substring(0, 26)} • UNSOLVED`
-    : `🚩 DAY ${entry.day} • ${entry.topic || 'ರಹಸ್ಯ ಇತಿಹಾಸ'}`.substring(0, 30);
-  const footerText = isEnglish
-    ? 'APERTURE SPEC • GLOBAL MYSTERIES'
-    : '🔴 KANNADIGA 369 • HISTORICAL MYSTERY';
-  await createMasterThumbnail(images[0], headline, badge, thumbPath, footerText);
 
   // 7. Upload to YouTube with native Cloud Scheduling (`publishAt`)
   console.log(`📤 Uploading to YouTube Cloud Scheduled for: ${entry.scheduledDate}...`);
@@ -491,64 +528,84 @@ async function produceScheduledVideo(targetDay) {
     ? [...(entry.tags || []), 'World Mysteries', 'Science Facts', 'Unsolved Mysteries', 'Mind Blowing', 'AquaFlow Direct', 'Aperture', 'What If']
     : (entry.tags || []);
 
-  const uploadRes = await yt.videos.insert({
-    part: ['snippet', 'status'],
-    requestBody: {
-      snippet: {
-        title: entry.title,
-        description: `${promoBlock}${entry.title} | Kannadiga 369\n\n${entry.hook}\n\n#WorldMysteries #ScienceFacts #UnsolvedMysteries #ViralTech`,
-        tags,
-        categoryId: '27',
-        defaultLanguage: isEnglish ? 'en' : 'kn',
-        defaultAudioLanguage: isEnglish ? 'en' : 'kn'
+  let uploadRes;
+  try {
+    uploadRes = await yt.videos.insert({
+      part: ['snippet', 'status'],
+      requestBody: {
+        snippet: {
+          title: entry.title,
+          description: `${promoBlock}${entry.title} | Kannadiga 369\n\n${entry.hook}\n\n#WorldMysteries #ScienceFacts #UnsolvedMysteries #ViralTech`,
+          tags,
+          categoryId: '27',
+          defaultLanguage: isEnglish ? 'en' : 'kn',
+          defaultAudioLanguage: isEnglish ? 'en' : 'kn'
+        },
+        status: {
+          privacyStatus: 'private',
+          publishAt: entry.scheduledDate,
+          selfDeclaredMadeForKids: false
+        }
       },
-      status: {
-        privacyStatus: 'private',
-        publishAt: entry.scheduledDate,
-        selfDeclaredMadeForKids: false
+      media: {
+        body: fsSync.createReadStream(finalVideo)
       }
-    },
-    media: {
-      body: fsSync.createReadStream(finalVideo)
+    });
+  } catch (uploadErr) {
+    const isLimit = uploadErr.message?.includes('exceeded the number of videos') ||
+                    uploadErr.message?.includes('uploadLimitExceeded') ||
+                    uploadErr.message?.includes('quotaExceeded');
+    if (isLimit) {
+      console.warn(`⏳ YouTube upload limit reached (${uploadErr.message}).`);
+      console.log(`💾 Preserving rendered video (${finalVideo}) in calendar for next upload window.`);
+      entry.preRenderedVideo = finalVideo;
+      if (thumbPath) entry.preRenderedThumb = thumbPath;
+      await fs.writeFile(calendarPath, JSON.stringify(calendar, null, 2), 'utf8');
+      return { status: 'quota_reached', day: entry.day, title: entry.title };
     }
-  });
+    throw uploadErr;
+  }
 
   const videoId = uploadRes.data.id;
+  delete entry.preRenderedVideo;
+  delete entry.preRenderedThumb;
   console.log(`✅ VIDEO SCHEDULED IN YOUTUBE CLOUD! Video ID: ${videoId}`);
   console.log(`Cloud Auto-Publish Time: ${entry.scheduledDate}`);
 
   // Thumbnail
-  try {
-    await yt.thumbnails.set({
-      videoId,
-      media: {
-        mimeType: 'image/jpeg',
-        body: fsSync.createReadStream(thumbPath)
-      }
-    });
-    console.log('✅ Custom thumbnail applied successfully!');
-
-    // Post dropshipping promotional pinned comment
+  if (thumbPath && fsSync.existsSync(thumbPath)) {
     try {
-      await yt.commentThreads.insert({
-        part: ['snippet'],
-        requestBody: {
-          snippet: {
-            videoId,
-            topLevelComment: {
-              snippet: {
-                textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart home inventions! 👉 ${storeUrl} (Cash on Delivery & PhonePe / GPay Accepted! Limited Stock Available 🛒👇)`
+      await yt.thumbnails.set({
+        videoId,
+        media: {
+          mimeType: 'image/jpeg',
+          body: fsSync.createReadStream(thumbPath)
+        }
+      });
+      console.log('✅ Custom thumbnail applied successfully!');
+
+      // Post dropshipping promotional pinned comment
+      try {
+        await yt.commentThreads.insert({
+          part: ['snippet'],
+          requestBody: {
+            snippet: {
+              videoId,
+              topLevelComment: {
+                snippet: {
+                  textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart home inventions! 👉 ${storeUrl} (Cash on Delivery & PhonePe / GPay Accepted! Limited Stock Available 🛒👇)`
+                }
               }
             }
           }
-        }
-      });
-      console.log('✅ Dropshipping promotional pinned comment posted!');
-    } catch (commErr) {
-      console.warn('Comment post notice:', commErr.message);
+        });
+        console.log('✅ Dropshipping promotional pinned comment posted!');
+      } catch (commErr) {
+        console.warn('Comment post notice:', commErr.message);
+      }
+    } catch (err) {
+      console.warn('Thumbnail set warning:', err.message);
     }
-  } catch (err) {
-    console.warn('Thumbnail set warning:', err.message);
   }
 
   // 8. Produce & Schedule Companion Viral Short (9:16 Vertical)
@@ -606,59 +663,73 @@ async function produceScheduledVideo(targetDay) {
     const shortDate = new Date(new Date(entry.scheduledDate).getTime() - (4.5 * 60 * 60 * 1000)).toISOString();
     console.log(`📤 Uploading Companion Short scheduled for ${shortDate}...`);
 
-    const shortUpload = await yt.videos.insert({
-      part: ['snippet', 'status'],
-      requestBody: {
-        snippet: {
-          title: isEnglish
-            ? `${entry.title.substring(0, 50)}... 😱 #Shorts #Viral`
-            : `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
-          description: isEnglish
-            ? `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #ViralShorts #MindBlowing #Curiosity #ScienceFacts`
-            : `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
-          tags: isEnglish
-            ? ['Shorts', 'Viral Shorts', 'Mind Blowing', 'Unsolved Mysteries', 'Science Facts', 'Curiosities', 'Gadgets', ...(entry.tags || [])]
-            : ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
-          categoryId: '27',
-          defaultLanguage: isEnglish ? 'en' : 'kn',
-          defaultAudioLanguage: isEnglish ? 'en' : 'kn'
-        },
-        status: {
-          privacyStatus: 'private',
-          publishAt: shortDate,
-          selfDeclaredMadeForKids: false
-        }
-      },
-      media: {
-        body: fsSync.createReadStream(finalShortVideo)
-      }
-    });
-
-    const shortId = shortUpload.data.id;
-    console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortId}`);
-    entry.shortVideoId = shortId;
-
-    // Post dropshipping promotional pinned comment on short
     try {
-      await yt.commentThreads.insert({
-        part: ['snippet'],
+      const shortUpload = await yt.videos.insert({
+        part: ['snippet', 'status'],
         requestBody: {
           snippet: {
-            videoId: shortId,
-            topLevelComment: {
-              snippet: {
-                textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart lifestyle inventions! 👉 ${storeUrl} (Cash on Delivery & PhonePe / GPay Accepted! Limited Stock Available 🛒👇)`
+            title: isEnglish
+              ? `${entry.title.substring(0, 50)}... 😱 #Shorts #Viral`
+              : `${entry.title.substring(0, 50)}... 😱 #Shorts #Kannada`,
+            description: isEnglish
+              ? `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #ViralShorts #MindBlowing #Curiosity #ScienceFacts`
+              : `🛍️ Shop Trending Viral Inventions (Flat 50% OFF + Free Delivery): ${storeUrl}\n\n${entry.hook}\n\n#Shorts #KannadaShorts #Kannadiga369 #ViralShorts`,
+            tags: isEnglish
+              ? ['Shorts', 'Viral Shorts', 'Mind Blowing', 'Unsolved Mysteries', 'Science Facts', 'Curiosities', 'Gadgets', ...(entry.tags || [])]
+              : ['Shorts', 'Kannada Shorts', 'Kannadiga 369', 'Viral Kannada', ...(entry.tags || [])],
+            categoryId: '27',
+            defaultLanguage: isEnglish ? 'en' : 'kn',
+            defaultAudioLanguage: isEnglish ? 'en' : 'kn'
+          },
+          status: {
+            privacyStatus: 'private',
+            publishAt: shortDate,
+            selfDeclaredMadeForKids: false
+          }
+        },
+        media: {
+          body: fsSync.createReadStream(finalShortVideo)
+        }
+      });
+
+      const shortId = shortUpload.data.id;
+      console.log(`✅ COMPANION SHORT SCHEDULED! Video ID: ${shortId}`);
+      entry.shortVideoId = shortId;
+      delete entry.preRenderedShort;
+
+      // Post dropshipping promotional pinned comment on short
+      try {
+        await yt.commentThreads.insert({
+          part: ['snippet'],
+          requestBody: {
+            snippet: {
+              videoId: shortId,
+              topLevelComment: {
+                snippet: {
+                  textOriginal: `🛍️ 🔥 EXCLUSIVE FLASH SALE: Flat 50% OFF + Free Express Delivery on trending viral gadgets & smart lifestyle inventions! 👉 ${storeUrl} (Cash on Delivery & PhonePe / GPay Accepted! Limited Stock Available 🛒👇)`
+                }
               }
             }
           }
-        }
-      });
-      console.log('✅ Short promotional pinned comment posted!');
-    } catch (cErr) {
-      console.warn('Short comment notice:', cErr.message);
+        });
+        console.log('✅ Short promotional pinned comment posted!');
+      } catch (cErr) {
+        console.warn('Short comment notice:', cErr.message);
+      }
+    } catch (shortUpErr) {
+      const isLimit = shortUpErr.message?.includes('exceeded the number of videos') ||
+                      shortUpErr.message?.includes('uploadLimitExceeded') ||
+                      shortUpErr.message?.includes('quotaExceeded');
+      if (isLimit) {
+        console.warn(`⏳ YouTube upload limit reached for Short (${shortUpErr.message}).`);
+        console.log(`💾 Preserving rendered Short (${finalShortVideo}) for next upload window.`);
+        entry.preRenderedShort = finalShortVideo;
+      } else {
+        console.warn('Companion short upload notice:', shortUpErr.message);
+      }
     }
   } catch (shortErr) {
-    console.warn('Companion short notice:', shortErr.message);
+    console.warn('Companion short generation notice:', shortErr.message);
   }
 
   // Update calendar

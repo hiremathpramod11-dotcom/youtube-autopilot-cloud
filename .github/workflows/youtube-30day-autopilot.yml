@@ -30,7 +30,7 @@ jobs:
 
       - name: Install FFmpeg and Neural TTS in Cloud
         run: |
-          sudo apt-get update && sudo apt-get install -y ffmpeg python3-pip
+          sudo apt-get update && sudo apt-get install -y ffmpeg python3-pip python-is-python3
           pip install edge-tts --break-system-packages || pip install edge-tts
 
       - name: Restore Cloud Credentials from GitHub Secrets
@@ -60,13 +60,17 @@ jobs:
           PROMOTIONAL_STORE_URL: ${{ secrets.PROMOTIONAL_STORE_URL || 'https://latinas-plastic-manitoba-handling.trycloudflare.com/' }}
         run: node scripts/cloud-runner.js
 
-      - name: Commit and Push Calendar Updates
+      - name: Commit and Push Calendar & Token Updates
         if: always()
         run: |
           git config --global user.name "Kannadiga369-CloudBot"
           git config --global user.email "bot@kannadiga369.com"
-          git add data/30_day_calendar.json
-          git diff --staged --quiet || (git commit -m "chore: updated YouTube cloud calendar state [skip ci]" && git push)
+          git add data/30_day_calendar.json config/tokens.json shadow-print/
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: updated YouTube cloud calendar & token state [skip ci]"
+            git pull --rebase origin main || git rebase --abort
+            git push origin main
+          fi
 
       - name: Prevent GitHub From Disabling Workflow (Lifetime Keepalive)
         uses: gautamkrishnar/keepalive-workflow@v2
