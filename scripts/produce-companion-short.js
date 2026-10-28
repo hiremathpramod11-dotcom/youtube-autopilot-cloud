@@ -16,39 +16,45 @@ async function downloadImage(url, dest) {
   return dest;
 }
 
-async function fetchWikiImages(wikiTitles, outDir) {
+async function fetchVisualAssets(topic, wikiTitles, outDir) {
   await fs.mkdir(outDir, { recursive: true });
-  const query = `https://en.wikipedia.org/w/api.php?action=query&titles=${wikiTitles.join('|')}&prop=pageimages&format=json&pithumbsize=1920`;
-  const res = await axios.get(query, { headers: { 'User-Agent': WIKIPEDIA_USER_AGENT } });
-  const pages = Object.values(res.data.query?.pages || {});
   const images = [];
+  const videos = [];
 
-  for (let i = 0; i < pages.length; i++) {
-    const page = pages[i];
-    if (page.thumbnail?.source) {
-      const imgPath = path.join(outDir, `img_${i}.jpg`);
-      try {
-        await downloadImage(page.thumbnail.source, imgPath);
-        images.push(imgPath);
-      } catch (e) {
-        console.warn(`Failed image for ${page.title}:`, e.message);
+  // A. Fetch Wikipedia lead images
+  try {
+    const query = `https://en.wikipedia.org/w/api.php?action=query&titles=${wikiTitles.join('|')}&prop=pageimages&format=json&pithumbsize=1920`;
+    const res = await axios.get(query, { headers: { 'User-Agent': WIKIPEDIA_USER_AGENT } });
+    const pages = Object.values(res.data.query?.pages || {});
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      if (page.thumbnail?.source) {
+        const imgPath = path.join(outDir, `img_${i}.jpg`);
+        try {
+          await downloadImage(page.thumbnail.source, imgPath);
+          images.push(imgPath);
+        } catch (e) {
+          console.warn(`Failed image for ${page.title}:`, e.message);
+        }
       }
     }
+  } catch (err) {
+    console.warn('Wikipedia image search notice:', err.message);
   }
 
-  // If fewer than 4 images, fetch authentic high-res photos from Wikimedia Commons search
-  if (images.length < 4 && wikiTitles.length > 0) {
+  // B. Query Wikimedia Commons for authentic high-res photos
+  if (images.length < 6 && wikiTitles.length > 0) {
     try {
-      const searchTerm = wikiTitles[0].replace(/_/g, ' ');
-      console.log(`🌐 Searching Wikimedia Commons for additional HD imagery: "${searchTerm}"...`);
-      const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchTerm)}&gsrnamespace=6&gsrlimit=8&prop=imageinfo&iiprop=url&iiurlwidth=1920&format=json`;
+      const searchTerm = (wikiTitles[0] || topic || '').replace(/_/g, ' ');
+      console.log(`🌐 Searching Wikimedia Commons for HD photography: "${searchTerm}"...`);
+      const commonsUrl = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(searchTerm)}&gsrnamespace=6&gsrlimit=12&prop=imageinfo&iiprop=url&iiurlwidth=1920&format=json`;
       const commonsRes = await axios.get(commonsUrl, { headers: { 'User-Agent': WIKIPEDIA_USER_AGENT } });
       const commonsPages = Object.values(commonsRes.data.query?.pages || {});
 
-      for (let j = 0; j < commonsPages.length && images.length < 6; j++) {
+      for (let j = 0; j < commonsPages.length && images.length < 8; j++) {
         const info = commonsPages[j].imageinfo?.[0];
         const imgUrl = info?.thumburl || info?.url;
-        if (imgUrl && !imgUrl.endsWith('.svg') && !imgUrl.endsWith('.ogg')) {
+        if (imgUrl && !imgUrl.endsWith('.svg') && !imgUrl.endsWith('.ogg') && !imgUrl.endsWith('.webm')) {
           const imgPath = path.join(outDir, `commons_${j}.jpg`);
           try {
             await downloadImage(imgUrl, imgPath);
@@ -63,8 +69,62 @@ async function fetchWikiImages(wikiTitles, outDir) {
     }
   }
 
-  // Procedural cinematic background fallback if network has zero images
-  if (images.length === 0) {
+  // C. Fetch Authentic HD Motion Video B-Roll from NASA Open Video Archive
+  const topicLower = `${topic} ${wikiTitles.join(' ')}`.toLowerCase();
+  const isCosmicOrPhysical = /(space|sun|solar|earth|ocean|abyss|sea|black hole|star|planet|atmosphere|ice|borehole|drill|geology|science|cosmic|astronomy|inventions|technology)/i.test(topicLower);
+
+  if (isCosmicOrPhysical) {
+    try {
+      const nasaSearchTerms = [];
+      if (/ocean|sea|abyss|trench|marianas|water/i.test(topicLower)) nasaSearchTerms.push('ocean earth', 'sea surface');
+      if (/sun|solar|light/i.test(topicLower)) nasaSearchTerms.push('sun solar flare', 'solar dynamics');
+      if (/black hole|supernova|galaxy|nebula/i.test(topicLower)) nasaSearchTerms.push('black hole simulation', 'supernova');
+      if (/earth|spin|atmosphere|drill|crust|geology/i.test(topicLower)) nasaSearchTerms.push('earth rotation', 'earth atmosphere');
+      if (nasaSearchTerms.length === 0) nasaSearchTerms.push('earth science');
+
+      console.log(`🚀 Searching NASA Open Video Archive for authentic motion B-roll: "${nasaSearchTerms[0]}"...`);
+      const nasaUrl = `https://images-api.nasa.gov/search?q=${encodeURIComponent(nasaSearchTerms[0])}&media_type=video`;
+      const nasaRes = await axios.get(nasaUrl, { timeout: 8000 });
+      const items = nasaRes.data.collection?.items || [];
+
+      for (let k = 0; k < Math.min(items.length, 2); k++) {
+        const mediaHref = items[k]?.href;
+        if (mediaHref) {
+          const formatsRes = await axios.get(mediaHref, { timeout: 6000 });
+          const formats = formatsRes.data || [];
+          const mp4Url = formats.find(u => u.includes('~small.mp4')) ||
+                         formats.find(u => u.includes('~preview.mp4')) ||
+                         formats.find(u => u.includes('~mobile.mp4')) ||
+                         formats.find(u => u.includes('~medium.mp4') && !u.includes('~orig.mp4'));
+          if (mp4Url) {
+            const vidPath = path.join(outDir, `nasa_broll_${k}.mp4`);
+            console.log(`⬇️ Downloading authentic NASA video B-roll clip (${k + 1})...`);
+            try {
+              const vidBuf = await axios({
+                method: 'GET',
+                url: mp4Url,
+                responseType: 'arraybuffer',
+                timeout: 25000,
+                maxContentLength: 45 * 1024 * 1024
+              });
+              await fs.writeFile(vidPath, vidBuf.data);
+              videos.push(vidPath);
+            } catch (dlErr) {
+              console.warn(`Skipping oversized or timed out video clip (${k + 1}):`, dlErr.message);
+            }
+          }
+        }
+      }
+      if (videos.length > 0) {
+        console.log(`✓ Acquired ${videos.length} authentic motion video B-roll clips!`);
+      }
+    } catch (nasaErr) {
+      console.warn('NASA video fetch notice:', nasaErr.message);
+    }
+  }
+
+  // Fallback procedural visual if network has zero imagery
+  if (images.length === 0 && videos.length === 0) {
     console.log('🌌 Generating procedural dark cinematic HD visual backdrop...');
     const fallbackPath = path.join(outDir, 'procedural_cinematic_bg.jpg');
     const svgBg = `<svg width="1920" height="1080" xmlns="http://www.w3.org/2000/svg">
@@ -81,7 +141,100 @@ async function fetchWikiImages(wikiTitles, outDir) {
     images.push(fallbackPath);
   }
 
-  return images;
+  return { images, videos };
+}
+
+async function renderCinematicScene(mediaPath, durationSeconds, motionType, outputPath, isShort = true) {
+  const isVideo = mediaPath.endsWith('.mp4') || mediaPath.endsWith('.webm') || mediaPath.endsWith('.ogv');
+
+  if (isVideo) {
+    const scaleCrop = isShort
+      ? 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920'
+      : 'scale=1920:1080:force_original_aspect_ratio=increase,crop=1920:1080';
+
+    const colorGrade = isShort
+      ? 'eq=contrast=1.16:brightness=-0.01:saturation=1.35,unsharp=5:5:0.6:5:5:0.0'
+      : 'eq=contrast=1.12:brightness=-0.02:saturation=1.22,vignette=PI/6,unsharp=5:5:0.6:5:5:0.0';
+
+    await runFFmpeg([
+      '-y',
+      '-ss', '2',
+      '-t', durationSeconds.toFixed(2),
+      '-i', mediaPath,
+      '-vf', `${scaleCrop},${colorGrade}`,
+      '-an',
+      '-c:v', 'libx264',
+      '-preset', 'medium',
+      '-crf', '18',
+      '-tune', 'film',
+      '-pix_fmt', 'yuv420p',
+      '-r', '30',
+      outputPath
+    ]);
+  } else {
+    const frames = Math.max(30, Math.round(durationSeconds * 30));
+    let zoomExpr;
+
+    if (isShort) {
+      if (motionType === 'push') {
+        zoomExpr = `scale=2160x3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='min(zoom+0.0018,1.22)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=30,eq=contrast=1.16:brightness=-0.01:saturation=1.35,unsharp=5:5:0.6:5:5:0.0`;
+      } else {
+        zoomExpr = `scale=2160x3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='if(lte(zoom,1.0),1.22,max(1.001,zoom-0.0018))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=30,eq=contrast=1.16:brightness=-0.01:saturation=1.35,unsharp=5:5:0.6:5:5:0.0`;
+      }
+    } else {
+      if (motionType === 'push') {
+        zoomExpr = `scale=3840x2160:force_original_aspect_ratio=increase,crop=3840:2160,zoompan=z='min(zoom+0.0014,1.18)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1920x1080:fps=30,eq=contrast=1.12:brightness=-0.02:saturation=1.22,vignette=PI/6,unsharp=5:5:0.6:5:5:0.0`;
+      } else {
+        zoomExpr = `scale=3840x2160:force_original_aspect_ratio=increase,crop=3840:2160,zoompan=z='if(lte(zoom,1.0),1.18,max(1.001,zoom-0.0014))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1920x1080:fps=30,eq=contrast=1.12:brightness=-0.02:saturation=1.22,vignette=PI/6,unsharp=5:5:0.6:5:5:0.0`;
+      }
+    }
+
+    await runFFmpeg([
+      '-y',
+      '-loop', '1',
+      '-i', mediaPath,
+      '-vf', zoomExpr,
+      '-t', durationSeconds.toFixed(2),
+      '-c:v', 'libx264',
+      '-preset', 'medium',
+      '-crf', '18',
+      '-tune', 'film',
+      '-pix_fmt', 'yuv420p',
+      '-r', '30',
+      outputPath
+    ]);
+  }
+}
+
+async function mixMasterAudio(voicePath, bgMusicPath, outputPath, isShort = true) {
+  const voiceFilter = isShort
+    ? 'highpass=f=80,equalizer=f=3200:t=q:w=1.2:g=2.5,loudnorm=I=-14:TP=-1.0:LRA=9'
+    : 'highpass=f=80,equalizer=f=3200:t=q:w=1.2:g=2.5,equalizer=f=200:t=q:w=1.5:g=1.2,loudnorm=I=-16:TP=-1.5:LRA=11';
+
+  const bgVolume = isShort ? 'volume=0.14' : 'volume=0.12';
+
+  if (bgMusicPath) {
+    await runFFmpeg([
+      '-y',
+      '-i', voicePath,
+      '-stream_loop', '-1',
+      '-i', bgMusicPath,
+      '-filter_complex', `[0:a]${voiceFilter}[v];[1:a]${bgVolume}[bg];[v][bg]amix=inputs=2:duration=first:dropout_transition=2[aout]`,
+      '-map', '[aout]',
+      '-c:a', 'aac',
+      '-b:a', '256k',
+      outputPath
+    ]);
+  } else {
+    await runFFmpeg([
+      '-y',
+      '-i', voicePath,
+      '-af', voiceFilter,
+      '-c:a', 'aac',
+      '-b:a', '256k',
+      outputPath
+    ]);
+  }
 }
 
 async function generateGeminiAudio(text, outputPath, voiceName = 'Fenrir') {
@@ -161,8 +314,8 @@ async function produceCompanionShort(targetDay) {
   console.log('═'.repeat(65));
 
   const assetDir = path.join(__dirname, '..', 'data', 'assets', `day_${entry.day}`);
-  const images = await fetchWikiImages(entry.wikiTitles || ['Karnataka'], assetDir);
-  console.log(`✓ Fetched ${images.length} images`);
+  const { images, videos } = await fetchVisualAssets(entry.topic || entry.title, entry.wikiTitles || ['Universe'], assetDir);
+  console.log(`✓ Fetched ${images.length} HD photos and ${videos.length} motion video B-roll clips`);
 
   const audioDir = path.join(__dirname, '..', 'data', 'audio');
   await fs.mkdir(audioDir, { recursive: true });
@@ -186,25 +339,21 @@ async function produceCompanionShort(targetDay) {
   const shortClipsDir = path.join(tempDir, 'short_clips');
   await fs.mkdir(shortClipsDir, { recursive: true });
 
-  const shortImages = images.slice(0, 4);
-  const shortClipDur = shortDur / shortImages.length;
+  const shortTotalClips = 6;
+  const shortClipDur = shortDur / shortTotalClips;
   const shortClipPaths = [];
 
-  for (let i = 0; i < shortImages.length; i++) {
+  for (let i = 0; i < shortTotalClips; i++) {
+    let mediaFile;
+    if (videos.length > 0 && i % 3 === 1) {
+      mediaFile = videos[i % videos.length];
+    } else {
+      mediaFile = images[i % images.length];
+    }
+
     const sOut = path.join(shortClipsDir, `sclip_${i}.mp4`);
     const motion = i % 2 === 0 ? 'push' : 'pull';
-    const frames = Math.max(30, Math.round(shortClipDur * 30));
-    const zExpr = motion === 'push'
-      ? `scale=2160x3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='min(zoom+0.002,1.22)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=30`
-      : `scale=2160x3840:force_original_aspect_ratio=increase,crop=2160:3840,zoompan=z='if(lte(zoom,1.0),1.22,max(1.001,zoom-0.002))':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1080x1920:fps=30`;
-
-    await runFFmpeg([
-      '-y', '-loop', '1', '-i', shortImages[i],
-      '-vf', zExpr,
-      '-t', shortClipDur.toFixed(2),
-      '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p',
-      sOut
-    ]);
+    await renderCinematicScene(mediaFile, shortClipDur, motion, sOut, true);
     shortClipPaths.push(sOut);
   }
 
@@ -217,24 +366,15 @@ async function produceCompanionShort(targetDay) {
   const candidateBg2 = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
   const bgMusicPath = fsSync.existsSync(candidateBg1) ? candidateBg1 : (fsSync.existsSync(candidateBg2) ? candidateBg2 : null);
 
-  const sMixedAudio = path.join(shortClipsDir, 'smixed.mp3');
-  if (bgMusicPath) {
-    await runFFmpeg([
-      '-y', '-i', shortAudioPath, '-stream_loop', '-1', '-i', bgMusicPath,
-      '-filter_complex', '[0:a]volume=1.1[v];[1:a]volume=0.15[bg];[v][bg]amix=inputs=2:duration=first[aout]',
-      '-map', '[aout]', '-c:a', 'libmp3lame', '-b:a', '192k',
-      sMixedAudio
-    ]);
-  } else {
-    await runFFmpeg(['-y', '-i', shortAudioPath, '-c:a', 'libmp3lame', '-b:a', '192k', sMixedAudio]);
-  }
+  const sMixedAudio = path.join(shortClipsDir, 'smixed.m4a');
+  await mixMasterAudio(shortAudioPath, bgMusicPath, sMixedAudio, true);
 
   const videosDir = path.join(__dirname, '..', 'data', 'videos');
   await fs.mkdir(videosDir, { recursive: true });
   const finalShortVideo = path.join(videosDir, `day_${entry.day}_short_${Date.now()}.mp4`);
   await runFFmpeg([
     '-y', '-i', sRaw, '-i', sMixedAudio,
-    '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest',
+    '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-shortest',
     finalShortVideo
   ]);
 
