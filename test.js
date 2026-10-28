@@ -2704,7 +2704,11 @@ class SystemTest {
     const { AITextService } = require('./utils/ai-text-service');
 
     const savedEnv = process.env.OPENAI_API_KEY;
+    const savedOR = process.env.OPENROUTER_API_KEY;
+    const savedGemini = process.env.GEMINI_API_KEY;
     delete process.env.OPENAI_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
+    delete process.env.GEMINI_API_KEY;
     try {
       const service = new AITextService({
         aiProvider: { provider: 'openai', apiKey: 'test-key', model: 'gpt-6.1-sol' }
@@ -2830,6 +2834,10 @@ class SystemTest {
     } finally {
       if (savedEnv === undefined) delete process.env.OPENAI_API_KEY;
       else process.env.OPENAI_API_KEY = savedEnv;
+      if (savedOR === undefined) delete process.env.OPENROUTER_API_KEY;
+      else process.env.OPENROUTER_API_KEY = savedOR;
+      if (savedGemini === undefined) delete process.env.GEMINI_API_KEY;
+      else process.env.GEMINI_API_KEY = savedGemini;
     }
 
     this.logger.info('AI text service token parameter test completed successfully');

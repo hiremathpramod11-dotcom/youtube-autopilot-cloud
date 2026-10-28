@@ -21,19 +21,19 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0 # Full git history required for rebase and keepalive
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install FFmpeg and Neural TTS in Cloud
+      - name: Install FFmpeg, Python & Edge-TTS in Cloud
         run: |
           sudo apt-get update && sudo apt-get install -y ffmpeg python3-pip python-is-python3
           pip install edge-tts --break-system-packages || pip install edge-tts
 
-      - name: Restore Cloud Credentials from GitHub Secrets
+      - name: Restore Cloud Credentials
         env:
           CREDS: ${{ secrets.YOUTUBE_CREDENTIALS_JSON }}
           TOKENS: ${{ secrets.YOUTUBE_TOKENS_JSON }}
@@ -41,13 +41,14 @@ jobs:
           node -e "
             const fs = require('fs');
             fs.mkdirSync('config', { recursive: true });
-            if (!process.env.CREDS || !process.env.TOKENS) {
-              console.error('Missing YOUTUBE_CREDENTIALS_JSON or YOUTUBE_TOKENS_JSON in GitHub Secrets!');
-              process.exit(1);
+            if (process.env.CREDS && process.env.CREDS.trim().length > 10) {
+              fs.writeFileSync('config/credentials.json', process.env.CREDS.trim());
+              console.log('✓ Restored credentials.json from GitHub Secrets.');
             }
-            fs.writeFileSync('config/credentials.json', process.env.CREDS.trim());
-            fs.writeFileSync('config/tokens.json', process.env.TOKENS.trim());
-            console.log('✓ Credentials and tokens successfully restored in cloud runtime.');
+            if (process.env.TOKENS && process.env.TOKENS.trim().length > 10) {
+              fs.writeFileSync('config/tokens.json', process.env.TOKENS.trim());
+              console.log('✓ Restored tokens.json from GitHub Secrets.');
+            }
           "
 
       - name: Install Node Dependencies
@@ -65,7 +66,8 @@ jobs:
         run: |
           git config --global user.name "Kannadiga369-CloudBot"
           git config --global user.email "bot@kannadiga369.com"
-          git add data/30_day_calendar.json config/tokens.json shadow-print/
+          git add data/30_day_calendar.json shadow-print/ || true
+          git add -f config/tokens.json 2>/dev/null || true
           if ! git diff --staged --quiet; then
             git commit -m "chore: updated YouTube cloud calendar & token state [skip ci]"
             git pull --rebase origin main || git rebase --abort
