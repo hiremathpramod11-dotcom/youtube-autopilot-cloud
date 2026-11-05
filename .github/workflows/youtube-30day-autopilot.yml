@@ -74,8 +74,13 @@ jobs:
             git push origin main
           fi
 
-      - name: Prevent GitHub From Disabling Workflow (Lifetime Keepalive)
-        uses: gautamkrishnar/keepalive-workflow@v2
+      - name: Keepalive Heartbeat
         if: always()
-        with:
-          commit_message: "chore: automated lifetime keepalive [skip ci]"
+        run: |
+          mkdir -p .github
+          echo "heartbeat: $(date -u)" > .github/heartbeat.txt
+          git add .github/heartbeat.txt
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: automated lifetime heartbeat [skip ci]" || true
+            git push origin main || true
+          fi
