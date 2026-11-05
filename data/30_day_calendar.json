@@ -1018,5 +1018,512 @@
       "Lost Technology",
       "Archaeology"
     ]
+  },
+  {
+    "day": 35,
+    "status": "pending",
+    "scheduledDate": "2026-11-25T12:30:00.000Z",
+    "title": "Gravity's Edge 🌀",
+    "topic": "A world without gravity",
+    "wikiTitles": [
+      "Gravity",
+      "General Relativity",
+      "Weightlessness"
+    ],
+    "hook": "Imagine waking up to a world where the laws of physics no longer apply, and the very fabric of our reality is torn apart. What if gravity, the force that governs our every move, suddenly ceased to exist? How would humanity survive in a world where the rules of up and down no longer matter?",
+    "sections": [
+      {
+        "title": "1. The Gravity Paradox",
+        "narration": "Gravity is the weakest of the four fundamental forces, yet it dominates our daily lives. From the falling of objects to the orbits of planets, gravity is the unseen force that governs the behavior of mass and energy. But what if this force were to suddenly disappear?"
+      },
+      {
+        "title": "2. A World Without Weight",
+        "narration": "Without gravity, the effects on our planet would be catastrophic. Oceans would float off into space, the atmosphere would dissipate, and the very foundations of our ecosystems would collapse. The rules of physics as we know them would no longer apply, and humanity would be faced with an unprecedented crisis."
+      },
+      {
+        "title": "3. The Search for Answers",
+        "narration": "Scientists have long been fascinated by the mysteries of gravity, from the curvature of spacetime to the behavior of gravitational waves. But what if the key to understanding gravity lies not in the laws of physics, but in the fundamental nature of reality itself?"
+      },
+      {
+        "title": "4. The Edge of Reality",
+        "narration": "As we ponder the possibility of a world without gravity, we are forced to confront the limits of our understanding and the boundaries of human knowledge. The search for answers leads us to the edge of reality, where the laws of physics are pushed to the limit and the very fabric of existence is revealed in all its mysterious glory."
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Cosmology"
+    ]
+  },
+  {
+    "day": 36,
+    "status": "pending",
+    "scheduledDate": "2026-11-26T12:30:00.000Z",
+    "title": "Ocean's Twilight Zone",
+    "topic": "Deep ocean abyss mysteries",
+    "wikiTitles": [
+      "Deep Sea",
+      "Marine Biology",
+      "Oceanography"
+    ],
+    "hook": "In the dark, icy depths of the ocean, a world of unexplored mysteries awaits. What lies in the twilight zone, where the last remnants of sunlight barely penetrate? What secrets do the deep-sea creatures hold, and what do they reveal about the origins of life on Earth?",
+    "sections": [
+      {
+        "title": "1. The Unseen World",
+        "narration": "The deep ocean is a vast, uncharted territory, covering over 70% of our planet. Yet, despite its importance, we have only explored a fraction of its depths. The twilight zone, a region of perpetual darkness, is home to an astonishing array of bizarre and alien-like creatures."
+      },
+      {
+        "title": "2. Bioluminescent Beings",
+        "narration": "In the dark depths, bioluminescence is the key to survival. Creatures that produce their own light have evolved to thrive in this environment, where the absence of sunlight makes every photon count. But what drives this incredible diversity of bioluminescent beings, and what do they reveal about the evolution of life on Earth?"
+      },
+      {
+        "title": "3. The Hadal Zone",
+        "narration": "The deepest, darkest part of the ocean, the hadal zone, is a region of crushing pressure and near-freezing temperatures. Yet, even here, life finds a way to thrive. What do the creatures of the hadal zone tell us about the limits of life, and the possibility of life beyond Earth?"
+      },
+      {
+        "title": "4. The Abyssal Frontier",
+        "narration": "As we explore the deep ocean, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The deep sea is a frontier that challenges our perceptions of the natural world and our place within it. What secrets lie hidden in the darkness, waiting to be uncovered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Marine Biology"
+    ]
+  },
+  {
+    "day": 37,
+    "status": "pending",
+    "scheduledDate": "2026-11-27T12:30:00.000Z",
+    "title": "The Pyramid Enigma",
+    "topic": "Ancient engineering mysteries",
+    "wikiTitles": [
+      "Great Pyramid of Giza",
+      "Baalbek",
+      "Göbekli Tepe"
+    ],
+    "hook": "The ancient pyramids have long been a source of fascination and awe, but what if their construction holds the key to a far greater mystery? What if the precision engineering and megalithic structures of our ancestors reveal a hidden code, waiting to be deciphered?",
+    "sections": [
+      {
+        "title": "1. The Great Pyramid",
+        "narration": "The Great Pyramid of Giza is an engineering marvel, a testament to the ingenuity and skill of our ancient ancestors. But what if its construction is more than just a feat of engineering? What if it holds the secrets of a lost civilization, and the key to understanding the fundamental laws of the universe?"
+      },
+      {
+        "title": "2. The Baalbek Enigma",
+        "narration": "The ancient city of Baalbek, with its massive stone blocks and precision engineering, is a mystery that has puzzled archaeologists and engineers for centuries. What if the secrets of Baalbek hold the key to understanding the origins of human civilization, and the role of ancient technology in shaping our modern world?"
+      },
+      {
+        "title": "3. Göbekli Tepe",
+        "narration": "The ancient temple of Göbekli Tepe, with its intricate carvings and mysterious symbols, is a window into the past, revealing a sophisticated and complex society that challenges our assumptions about the rise of human civilization. What if Göbekli Tepe holds the secrets of a lost language, and the key to understanding the evolution of human consciousness?"
+      },
+      {
+        "title": "4. The Code of the Ancients",
+        "narration": "As we explore the ancient pyramids and megalithic structures, we are forced to confront the limits of our understanding and the boundaries of human knowledge. The precision engineering and mysterious symbols of our ancestors reveal a hidden code, waiting to be deciphered. What secrets lie hidden in the stones, waiting to be uncovered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Ancient History"
+    ]
+  },
+  {
+    "day": 38,
+    "status": "pending",
+    "scheduledDate": "2026-11-28T12:30:00.000Z",
+    "title": "Quantum Anomaly",
+    "topic": "Unsolved scientific paradoxes",
+    "wikiTitles": [
+      "Quantum Mechanics",
+      "Schrödinger's Cat",
+      "Heisenberg Uncertainty Principle"
+    ],
+    "hook": "In the strange and mysterious world of quantum mechanics, the rules of reality are turned upside down. What if the paradoxes of quantum physics hold the key to understanding the fundamental nature of reality? What if the act of observation itself is the source of the anomaly?",
+    "sections": [
+      {
+        "title": "1. The Quantum Paradox",
+        "narration": "Quantum mechanics is a realm where the laws of physics are pushed to the limit, and the rules of reality are challenged. The paradox of Schrödinger's cat, where a cat can be both alive and dead at the same time, is a mind-bending puzzle that has puzzled physicists for decades."
+      },
+      {
+        "title": "2. The Observer Effect",
+        "narration": "The act of observation itself is a source of anomaly in quantum mechanics. The Heisenberg Uncertainty Principle reveals that the mere act of measurement can change the outcome of an experiment. What if the observer effect holds the key to understanding the nature of reality, and the role of consciousness in shaping our universe?"
+      },
+      {
+        "title": "3. Quantum Entanglement",
+        "narration": "Quantum entanglement, where two particles become connected in a way that transcends space and time, is a phenomenon that challenges our understanding of reality. What if entanglement holds the key to understanding the interconnectedness of all things, and the nature of space and time itself?"
+      },
+      {
+        "title": "4. The Quantum Frontier",
+        "narration": "As we explore the mysteries of quantum mechanics, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The paradoxes of quantum physics reveal a hidden reality, waiting to be uncovered. What secrets lie hidden in the quantum realm, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Quantum Mechanics"
+    ]
+  },
+  {
+    "day": 39,
+    "status": "pending",
+    "scheduledDate": "2026-11-29T12:30:00.000Z",
+    "title": "The Andromeda Collision",
+    "topic": "Cosmic 'What If' simulations",
+    "wikiTitles": [
+      "Andromeda Galaxy",
+      "Galactic Collision",
+      "Cosmology"
+    ],
+    "hook": "In a distant corner of the universe, a catastrophic event is unfolding. The Andromeda galaxy, our closest galactic neighbor, is on a collision course with the Milky Way. What if the collision of these two galaxies holds the key to understanding the evolution of the universe, and the fate of human civilization?",
+    "sections": [
+      {
+        "title": "1. The Cosmic Collision",
+        "narration": "The collision of the Andromeda galaxy with the Milky Way is a catastrophic event that will reshape the very fabric of our universe. The consequences of this collision will be felt across the cosmos, from the destruction of star systems to the creation of new galaxies."
+      },
+      {
+        "title": "2. The Galactic Merger",
+        "narration": "As the Andromeda galaxy merges with the Milky Way, a new galaxy will be formed, with a completely new structure and composition. What if this merger holds the key to understanding the evolution of galaxies, and the role of dark matter in shaping the universe?"
+      },
+      {
+        "title": "3. The Fate of Human Civilization",
+        "narration": "The collision of the Andromeda galaxy with the Milky Way will have a profound impact on human civilization. As the galaxies merge, the solar system will be thrown into chaos, and the very survival of humanity will be threatened. What if the collision holds the key to understanding the ultimate fate of human civilization, and the role of the universe in shaping our destiny?"
+      },
+      {
+        "title": "4. The Cosmic Horizon",
+        "narration": "As we gaze out into the universe, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The collision of the Andromeda galaxy with the Milky Way reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the cosmos, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Cosmology"
+    ]
+  },
+  {
+    "day": 40,
+    "status": "pending",
+    "scheduledDate": "2026-11-30T12:30:00.000Z",
+    "title": "The Rogue Black Hole",
+    "topic": "Cosmic 'What If' simulations",
+    "wikiTitles": [
+      "Black Hole",
+      "Rogue Black Hole",
+      "Cosmology"
+    ],
+    "hook": "In the depths of space, a monster lurks, threatening to destroy entire galaxies. What if a rogue black hole, a cosmic entity with the power to warp space and time, is on a collision course with our solar system? What if the very fabric of reality is about to be torn apart?",
+    "sections": [
+      {
+        "title": "1. The Black Hole Threat",
+        "narration": "A rogue black hole is a cosmic entity with the power to destroy entire galaxies. Its gravity is so strong that not even light can escape, and its presence warps the fabric of space and time. What if this monster is on a collision course with our solar system?"
+      },
+      {
+        "title": "2. The Cosmic Collision",
+        "narration": "As the rogue black hole approaches our solar system, the consequences will be catastrophic. The gravity of the black hole will disrupt the orbits of the planets, and the very fabric of space and time will be torn apart. What if the collision holds the key to understanding the evolution of the universe, and the role of black holes in shaping the cosmos?"
+      },
+      {
+        "title": "3. The Warping of Space-Time",
+        "narration": "The gravity of the rogue black hole will warp the fabric of space and time, creating a region known as the ergosphere. What if this region holds the key to understanding the nature of gravity, and the role of black holes in shaping the universe?"
+      },
+      {
+        "title": "4. The Cosmic Horizon",
+        "narration": "As we gaze out into the universe, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The rogue black hole reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the cosmos, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Cosmology"
+    ]
+  },
+  {
+    "day": 41,
+    "status": "pending",
+    "scheduledDate": "2026-12-01T12:30:00.000Z",
+    "title": "The Great Attractor",
+    "topic": "Unsolved scientific paradoxes",
+    "wikiTitles": [
+      "Great Attractor",
+      "Dark Matter",
+      "Cosmology"
+    ],
+    "hook": "In the depths of space, a mysterious force is pulling our galaxy, the Milky Way, and many others towards a point in the universe. What if the Great Attractor, a region of space that is pulling our galaxy towards it, holds the key to understanding the evolution of the universe, and the role of dark matter in shaping the cosmos?",
+    "sections": [
+      {
+        "title": "1. The Mysterious Force",
+        "narration": "The Great Attractor is a region of space that is pulling our galaxy, the Milky Way, and many others towards it. The force is so strong that it is overriding the expansion of the universe, and pulling galaxies towards a point in space. What if this force holds the key to understanding the evolution of the universe?"
+      },
+      {
+        "title": "2. The Role of Dark Matter",
+        "narration": "The Great Attractor is thought to be a region of space where dark matter is dominant. Dark matter is a mysterious substance that makes up approximately 27% of the universe, yet we know very little about it. What if the Great Attractor holds the key to understanding the nature of dark matter, and its role in shaping the universe?"
+      },
+      {
+        "title": "3. The Cosmic Web",
+        "narration": "The Great Attractor is part of a larger network of galaxy filaments and voids that crisscross the universe. What if this cosmic web holds the key to understanding the evolution of the universe, and the role of dark matter in shaping the cosmos?"
+      },
+      {
+        "title": "4. The Cosmic Horizon",
+        "narration": "As we gaze out into the universe, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The Great Attractor reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the cosmos, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Cosmology"
+    ]
+  },
+  {
+    "day": 42,
+    "status": "pending",
+    "scheduledDate": "2026-12-02T12:30:00.000Z",
+    "title": "The Bloop",
+    "topic": "Unsolved scientific paradoxes",
+    "wikiTitles": [
+      "The Bloop",
+      "Low-Frequency Sound",
+      "Oceanography"
+    ],
+    "hook": "In the depths of the ocean, a mysterious sound was detected, a sound so loud that it was picked up by sensors over 3,000 miles away. What if the Bloop, a low-frequency sound detected by the National Oceanic and Atmospheric Administration (NOAA), holds the key to understanding the secrets of the ocean, and the role of sound in shaping our universe?",
+    "sections": [
+      {
+        "title": "1. The Mysterious Sound",
+        "narration": "The Bloop is a low-frequency sound that was detected by NOAA in 1997. The sound was so loud that it was picked up by sensors over 3,000 miles away, and was louder than any known earthly sound. What if this sound holds the key to understanding the secrets of the ocean?"
+      },
+      {
+        "title": "2. The Source of the Sound",
+        "narration": "The source of the Bloop is still unknown, but scientists have speculated that it could be the result of a massive iceberg calving, or even a marine animal that is capable of producing such a loud sound. What if the source of the Bloop holds the key to understanding the mysteries of the ocean?"
+      },
+      {
+        "title": "3. The Role of Sound",
+        "narration": "Sound plays a crucial role in our universe, from the way that animals communicate to the way that we perceive our environment. What if the Bloop holds the key to understanding the role of sound in shaping our universe, and the secrets that it holds?"
+      },
+      {
+        "title": "4. The Ocean's Secrets",
+        "narration": "As we explore the mysteries of the ocean, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The Bloop reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the ocean, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Oceanography"
+    ]
+  },
+  {
+    "day": 43,
+    "status": "pending",
+    "scheduledDate": "2026-12-03T12:30:00.000Z",
+    "title": "The Wow! Signal",
+    "topic": "Unsolved scientific paradoxes",
+    "wikiTitles": [
+      "Wow! Signal",
+      "SETI",
+      "Extraterrestrial Life"
+    ],
+    "hook": "In 1977, a strong, narrowband radio signal was detected by a radio telescope, lasting for 72 seconds and picked up by a single antenna. What if the Wow! Signal, a mysterious signal that was detected by a radio telescope, holds the key to understanding the existence of extraterrestrial life, and the role of radio signals in the search for life beyond Earth?",
+    "sections": [
+      {
+        "title": "1. The Mysterious Signal",
+        "narration": "The Wow! Signal is a strong, narrowband radio signal that was detected by a radio telescope in 1977. The signal was so strong that it was picked up by a single antenna, and was considered to be one of the most promising candidates for a transmission from an extraterrestrial civilization."
+      },
+      {
+        "title": "2. The Search for Extraterrestrial Life",
+        "narration": "The Wow! Signal is part of a larger search for extraterrestrial life, a search that has been ongoing for decades. What if the signal holds the key to understanding the existence of life beyond Earth, and the role of radio signals in the search for life?"
+      },
+      {
+        "title": "3. The Role of Radio Signals",
+        "narration": "Radio signals play a crucial role in the search for extraterrestrial life, as they are a way for civilizations to communicate over vast distances. What if the Wow! Signal holds the key to understanding the role of radio signals in the search for life beyond Earth?"
+      },
+      {
+        "title": "4. The Cosmic Horizon",
+        "narration": "As we gaze out into the universe, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The Wow! Signal reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the cosmos, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Extraterrestrial Life"
+    ]
+  },
+  {
+    "day": 44,
+    "status": "pending",
+    "scheduledDate": "2026-12-04T12:30:00.000Z",
+    "title": "The Great Sphinx",
+    "topic": "Ancient engineering enigmas",
+    "wikiTitles": [
+      "Great Sphinx of Giza",
+      "Ancient Egypt",
+      "Archaeology"
+    ],
+    "hook": "In the heart of Egypt, a mysterious monument has stood for thousands of years, a testament to the ingenuity and skill of our ancient ancestors. What if the Great Sphinx, a limestone statue with the body of a lion and the head of a human, holds the key to understanding the secrets of ancient Egypt, and the role of the Sphinx in the evolution of human civilization?",
+    "sections": [
+      {
+        "title": "1. The Mysterious Monument",
+        "narration": "The Great Sphinx is a limestone statue with the body of a lion and the head of a human, and is one of the most recognizable landmarks in the world. What if the Sphinx holds the key to understanding the secrets of ancient Egypt, and the role of the Sphinx in the evolution of human civilization?"
+      },
+      {
+        "title": "2. The Construction of the Sphinx",
+        "narration": "The construction of the Sphinx is a mystery that has puzzled archaeologists and historians for centuries. What if the Sphinx was built using advanced technology and engineering techniques that were lost to the ages?"
+      },
+      {
+        "title": "3. The Purpose of the Sphinx",
+        "narration": "The purpose of the Sphinx is still unknown, but it is believed to have been built as a symbol of the power and wisdom of the ancient Egyptian pharaohs. What if the Sphinx holds the key to understanding the secrets of ancient Egypt, and the role of the Sphinx in the evolution of human civilization?"
+      },
+      {
+        "title": "4. The Secrets of the Sphinx",
+        "narration": "As we explore the mysteries of the Sphinx, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The Sphinx reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the sands of time, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Ancient History"
+    ]
+  },
+  {
+    "day": 45,
+    "status": "pending",
+    "scheduledDate": "2026-12-05T12:30:00.000Z",
+    "title": "The Voynich Manuscript",
+    "topic": "Unsolved scientific paradoxes",
+    "wikiTitles": [
+      "Voynich Manuscript",
+      "Cryptology",
+      "Medieval History"
+    ],
+    "hook": "In the heart of Europe, a mysterious manuscript has been hidden for centuries, a testament to the ingenuity and skill of our medieval ancestors. What if the Voynich Manuscript, a handwritten book that is written in an unknown script and language, holds the key to understanding the secrets of medieval science, and the role of cryptography in the evolution of human knowledge?",
+    "sections": [
+      {
+        "title": "1. The Mysterious Manuscript",
+        "narration": "The Voynich Manuscript is a handwritten book that is written in an unknown script and language, and is one of the most mysterious and intriguing documents in the world. What if the manuscript holds the key to understanding the secrets of medieval science, and the role of cryptography in the evolution of human knowledge?"
+      },
+      {
+        "title": "2. The Cryptography of the Voynich",
+        "narration": "The Voynich Manuscript is written in a code that has never been cracked, and its language and script remain unknown. What if the cryptography of the Voynich holds the key to understanding the secrets of medieval science, and the role of cryptography in the evolution of human knowledge?"
+      },
+      {
+        "title": "3. The Purpose of the Voynich",
+        "narration": "The purpose of the Voynich Manuscript is still unknown, but it is believed to have been written by a medieval scholar or alchemist. What if the Voynich holds the key to understanding the secrets of medieval science, and the role of the manuscript in the evolution of human knowledge?"
+      },
+      {
+        "title": "4. The Secrets of the Voynich",
+        "narration": "As we explore the mysteries of the Voynich Manuscript, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The Voynich reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the pages of the manuscript, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Medieval History"
+    ]
+  },
+  {
+    "day": 46,
+    "status": "pending",
+    "scheduledDate": "2026-12-06T12:30:00.000Z",
+    "title": "The Fast Radio Burst",
+    "topic": "Unsolved scientific paradoxes",
+    "wikiTitles": [
+      "Fast Radio Burst",
+      "Astrophysics",
+      "Cosmology"
+    ],
+    "hook": "In the depths of space, a mysterious phenomenon has been detected, a burst of energy that is released in a fraction of a second. What if the Fast Radio Burst, a brief and intense pulse of radio energy, holds the key to understanding the secrets of the universe, and the role of astrophysical phenomena in shaping our understanding of the cosmos?",
+    "sections": [
+      {
+        "title": "1. The Mysterious Burst",
+        "narration": "The Fast Radio Burst is a brief and intense pulse of radio energy that is released in a fraction of a second. What if the burst holds the key to understanding the secrets of the universe, and the role of astrophysical phenomena in shaping our understanding of the cosmos?"
+      },
+      {
+        "title": "2. The Origin of the Burst",
+        "narration": "The origin of the Fast Radio Burst is still unknown, but it is believed to be caused by a cataclysmic event, such as the collapse of a massive star or the merger of two neutron stars. What if the burst holds the key to understanding the secrets of the universe, and the role of astrophysical phenomena in shaping our understanding of the cosmos?"
+      },
+      {
+        "title": "3. The Detection of the Burst",
+        "narration": "The detection of the Fast Radio Burst is a challenging task, as it requires the use of sophisticated radio telescopes and advanced detection algorithms. What if the detection of the burst holds the key to understanding the secrets of the universe, and the role of astrophysical phenomena in shaping our understanding of the cosmos?"
+      },
+      {
+        "title": "4. The Secrets of the Burst",
+        "narration": "As we explore the mysteries of the Fast Radio Burst, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The burst reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the depths of space, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Astrophysics"
+    ]
+  },
+  {
+    "day": 47,
+    "status": "pending",
+    "scheduledDate": "2026-12-07T12:30:00.000Z",
+    "title": "The Tabby's Star",
+    "topic": "Unsolved scientific paradoxes",
+    "wikiTitles": [
+      "Tabby's Star",
+      "Exoplanets",
+      "Astrophysics"
+    ],
+    "hook": "In the depths of space, a mysterious star has been detected, a star that is dimming and brightening in a way that is unlike any other star in the universe. What if Tabby's Star, a star that is located over 1,000 light-years from Earth, holds the key to understanding the secrets of the universe, and the role of exoplanets in shaping our understanding of the cosmos?",
+    "sections": [
+      {
+        "title": "1. The Mysterious Star",
+        "narration": "Tabby's Star is a star that is located over 1,000 light-years from Earth, and is known for its unusual dimming and brightening pattern. What if the star holds the key to understanding the secrets of the universe, and the role of exoplanets in shaping our understanding of the cosmos?"
+      },
+      {
+        "title": "2. The Exoplanets of Tabby's Star",
+        "narration": "The exoplanets of Tabby's Star are a mystery, as they are thought to be responsible for the star's unusual dimming and brightening pattern. What if the exoplanets hold the key to understanding the secrets of the universe, and the role of exoplanets in shaping our understanding of the cosmos?"
+      },
+      {
+        "title": "3. The Detection of the Exoplanets",
+        "narration": "The detection of the exoplanets of Tabby's Star is a challenging task, as it requires the use of sophisticated telescopes and advanced detection algorithms. What if the detection of the exoplanets holds the key to understanding the secrets of the universe, and the role of exoplanets in shaping our understanding of the cosmos?"
+      },
+      {
+        "title": "4. The Secrets of Tabby's Star",
+        "narration": "As we explore the mysteries of Tabby's Star, we are forced to confront the limits of our knowledge and the boundaries of human understanding. The star reveals a hidden reality, waiting to be uncovered. What secrets lie hidden in the depths of space, waiting to be deciphered?"
+      }
+    ],
+    "tags": [
+      "Aperture",
+      "What If",
+      "Science Documentary",
+      "World Mysteries",
+      "Unsolved Mysteries",
+      "Astrophysics"
+    ]
   }
 ]

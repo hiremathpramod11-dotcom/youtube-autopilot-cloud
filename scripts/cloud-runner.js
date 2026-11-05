@@ -273,7 +273,7 @@ async function autoExpandCalendar(calendar) {
   const lastDate = new Date(calendar[calendar.length - 1]?.scheduledDate || new Date());
 
   const prompt = `You are the lead executive writer for the legendary global channels Aperture, What If, and Thoughty2.
-Your goal is to engineer 10 viral video scripts that mirror the exact narrative depth, existential tension, and curiosity triggers of Aperture and What If.
+Your goal is to engineer 5 viral video scripts that mirror the exact narrative depth, existential tension, and curiosity triggers of Aperture and What If.
 
 Topics MUST be in English and cover:
 - Cosmic "What If" simulations (e.g. Earth without gravity, rogue black hole inbound, collision with Andromeda)
