@@ -705,7 +705,7 @@
   },
   {
     "day": 27,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-17T12:30:00.000Z",
     "title": "The 2,000-Year-Old Ancient Computer: The Antikythera Mechanism ⚙️🏛️ | Unsolved Archaeology",
     "topic": "Antikythera Mechanism Ancient Computer",
@@ -740,7 +740,9 @@
       "Ancient History",
       "Lost Civilizations",
       "Unsolved Mysteries"
-    ]
+    ],
+    "shortVideoId": "OwNJ_msQ6xk",
+    "videoId": "4yK6KjfX-2U"
   },
   {
     "day": 28,
