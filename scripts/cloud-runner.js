@@ -136,6 +136,131 @@ const EVERGREEN_TOPICS_POOL = [
       }
     ],
     tags: ['Yonaguni Monument', 'Underwater City', 'Ancient Mysteries', 'Archaeology', 'Sunken Ruins', 'Ocean Mysteries']
+  },
+  {
+    title: 'The 100-Foot Void Hidden Inside the Great Pyramid 🔺📡 | Cosmic Particle Scans',
+    topic: 'Great Pyramid ScanPyramids Void Discovery',
+    wikiTitles: ['Great_Pyramid_of_Giza', 'ScanPyramids', 'Cosmic-ray_muon'],
+    hook: 'For 4,500 years, the Great Pyramid of Giza was thought to have surrendered all its secrets. Then, in 2017, particle physicists tracked subatomic cosmic muons raining through the monument and discovered an impenetrable, sealed void at least one hundred feet long. What is sealed inside the heart of the pyramid?',
+    sections: [
+      {
+        title: '1. Cosmic Rays Reveal an Invisible Chamber',
+        narration: 'Muon radiography uses extraterrestrial particles created by exploding stars to scan solid stone like an X-ray. The results revealed an enormous hidden cavern directly above the Grand Gallery.'
+      },
+      {
+        title: '2. The Structure Nature Could Not Build',
+        narration: 'Calculations confirmed the void is deliberately constructed and spans over thirty meters in length, with cross-sections matching the monumental Grand Gallery below it.'
+      },
+      {
+        title: '3. Why It Has Never Been Opened',
+        narration: 'Because the void is encased in hundreds of feet of solid limestone, drilling into it risks structural collapse, leaving the world to speculate whether it holds sacred texts, ancient technology, or Pharaoh Khufu himself.'
+      },
+      {
+        title: '4. The Robotic Exploration Ahead',
+        narration: 'Engineers are now designing miniature blimp robots capable of slipping through tiny drill holes to illuminate a chamber untouched since the dawn of human civilization.'
+      }
+    ],
+    tags: ['Great Pyramid', 'ScanPyramids', 'Ancient Egypt', 'Muon Radiography', 'Archaeology', 'Aperture']
+  },
+  {
+    title: 'What If Earth Lost Gravity for Just 5 Seconds? 🌌💥 | Physical Reality Simulation',
+    topic: 'What If Gravity Disappeared Simulation',
+    wikiTitles: ['Gravity', 'Atmosphere_of_Earth', 'Earth%27s_rotation'],
+    hook: 'Gravity is the invisible anchor holding every atom, ocean, and person to the surface of our planet. If gravity vanished for merely five seconds, the cosmic consequences would be instantaneous and catastrophic. Here is the physics of what would happen before gravity returned.',
+    sections: [
+      {
+        title: '1. Second 1: Everything Becomes a Projectile',
+        narration: 'Because Earth rotates at a thousand miles per hour, the instant gravity cuts out, everything not anchored to bedrock continues moving in a straight tangent into the sky.'
+      },
+      {
+        title: '2. Seconds 2 to 3: The Oceans Explode Upward',
+        narration: 'Without gravitational pressure, atmospheric gas and ocean water would explosively expand, turning trillions of gallons of water into a towering planetary mist.'
+      },
+      {
+        title: '3. Seconds 4 to 5: Earth Core Expands',
+        narration: 'The colossal molten core of Earth, compressed under billions of tons of weight, would surge outward, fracturing the continental crust in massive seismic spasms.'
+      },
+      {
+        title: '4. The Crash: The Return of Gravity',
+        narration: 'When gravity suddenly snaps back on, every airborne mountain, city, and sea would plummet back to the ground with the force of ten thousand nuclear detonations.'
+      }
+    ],
+    tags: ['What If', 'Gravity Simulation', 'Physics Paradox', 'Earth Science', 'Cosmic Catastrophe', 'Aperture']
+  },
+  {
+    title: 'The Unsolved Mystery of the Voynich Manuscript 📜🔍 | The Uncrackable Cipher',
+    topic: 'Voynich Manuscript Unsolved Medieval Cipher',
+    wikiTitles: ['Voynich_manuscript', 'Cryptography', 'Medieval_manuscript'],
+    hook: 'Written in the early 1400s by an unknown scribe, the Voynich Manuscript contains two hundred and forty pages of bizarre botanical drawings, celestial star charts, and an untranslatable alien-like script. The greatest cryptanalysts, including Alan Turing and the NSA, failed to decipher a single word. Is it a lost language, or the greatest hoax in human history?',
+    sections: [
+      {
+        title: '1. The 600-Year-Old Cryptographic Enigma',
+        narration: 'Carbon dating confirms the calfskin vellum dates back to the early 15th century, ruling out modern forgery and placing it squarely in Renaissance Europe.'
+      },
+      {
+        title: '2. Plants That Do Not Exist on Earth',
+        narration: 'The botanical section features detailed illustrations of impossible hybrid plants with roots, leaves, and flowers that match no living species known to modern botany.'
+      },
+      {
+        title: '3. The Mathematical Fingerprint of Real Language',
+        narration: 'Linguistic analysis shows the script obeys Zipf Law, meaning word frequencies mirror natural human language rather than random gibberish, proving someone wrote with genuine intent.'
+      },
+      {
+        title: '4. The AI Frontier',
+        narration: 'Even cutting-edge deep learning models and neural networks have failed to break the code, preserving the Voynich manuscript as the most elusive puzzle in the history of literature.'
+      }
+    ],
+    tags: ['Voynich Manuscript', 'Cryptography', 'Ancient Mysteries', 'History Unsolved', 'Medieval Enigma', 'Aperture']
+  },
+  {
+    title: 'The Underground Metropolis of Derinkuyu 🏰⛏️ | 18 Stories Carved in Stone',
+    topic: 'Derinkuyu Underground City Cappadocia',
+    wikiTitles: ['Derinkuyu_underground_city', 'Cappadocia', 'Troglodyte'],
+    hook: 'In 1963, a Turkish homeowner knocked down a basement wall and stumbled into an ancient subterranean tunnel. It led to an 18-story underground metropolis that plunged nearly three hundred feet deep into solid volcanic rock. Designed to shelter twenty thousand people with livestock, food stores, and ventilation shafts, who built Derinkuyu and what were they hiding from?',
+    sections: [
+      {
+        title: '1. A Secret City Beneath the Floorboards',
+        narration: 'Excavations revealed an astonishing complex equipped with private dwellings, winemaking rooms, stables, schools, and subterranean chapels connected by miles of tunnels.'
+      },
+      {
+        title: '2. The Flawless Engineering Feat',
+        narration: 'Over fifty vertical ventilation shafts circulate fresh air down to the deepest levels without allowing toxic gases to accumulate, an engineering triumph achieved with primitive iron tools.'
+      },
+      {
+        title: '3. The Impenetrable Rolling Stone Doors',
+        narration: 'Each level could be sealed off from the inside using thousand-pound circular rolling stone doors, turning the underground city into a fortress against surface invaders.'
+      },
+      {
+        title: '4. Ancient Refuge or Forgotten Cataclysm?',
+        narration: 'While used by early Christians fleeing Roman persecution, geological evidence suggests parts of the subterranean labyrinth may date back thousands of years earlier to the mysterious Phrygians or Hittites.'
+      }
+    ],
+    tags: ['Derinkuyu', 'Underground City', 'Cappadocia', 'Ancient Engineering', 'Archaeology', 'Aperture']
+  },
+  {
+    title: 'The Bloop: What Made the Loudest Sound in Ocean History? 🌊🐋 | Deep Abyss Acoustic Riddle',
+    topic: 'The Bloop Deep Ocean Sound Mystery',
+    wikiTitles: ['Bloop', 'National_Oceanic_and_Atmospheric_Administration', 'Sound_surveillance_system'],
+    hook: 'In 1997, deep-sea hydrophone arrays placed across thousands of miles of the southern Pacific recorded a low-frequency sound so immense that it was detected on underwater microphones over three thousand miles apart. It matched the organic acoustic profile of a marine creature, but was several times louder than the largest blue whale. What lurks in the ocean abyss?',
+    sections: [
+      {
+        title: '1. The 1997 Pacific Hydrophone Shockwave',
+        narration: 'The Equatorial Pacific Ocean autonomous hydrophone array recorded an ultra-low frequency acoustic burst lasting over one minute that reverberated across entire ocean basins.'
+      },
+      {
+        title: '2. The Biological Signature Debate',
+        narration: 'Acoustic engineers noted the rising frequency sweep resembled the vocalization of living organisms, sparking scientific debate over whether an undiscovered abyssal creature produced it.'
+      },
+      {
+        title: '3. The Icequake Theory',
+        narration: 'Years later, NOAA suggested colossal Antarctic icebergs fracturing and scraping against the ocean floor could generate massive acoustic pressure waves matching the Bloop profile.'
+      },
+      {
+        title: '4. The Unmapped Depths',
+        narration: 'With over eighty percent of the world oceans remaining unmapped and unobserved, the Bloop stands as a haunting reminder of the deep cosmic mysteries hidden right beneath the waves.'
+      }
+    ],
+    tags: ['The Bloop', 'Deep Ocean', 'Ocean Mysteries', 'NOAA', 'Abyss', 'Marine Biology', 'Aperture']
   }
 ];
 

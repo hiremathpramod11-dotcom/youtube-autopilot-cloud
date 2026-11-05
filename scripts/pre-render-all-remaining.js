@@ -11,7 +11,11 @@ const WIKIPEDIA_USER_AGENT = 'Kannadiga369Bot/1.0 (contact@kannadiga369.com)';
 
 async function downloadImage(url, dest) {
   const res = await axios({ method: 'GET', url, responseType: 'arraybuffer', headers: { 'User-Agent': WIKIPEDIA_USER_AGENT } });
-  await fs.writeFile(dest, res.data);
+  try {
+    await sharp(res.data).jpeg({ quality: 95 }).toFile(dest);
+  } catch (err) {
+    await fs.writeFile(dest, res.data);
+  }
   return dest;
 }
 
@@ -96,10 +100,19 @@ async function renderKenBurnsClip(imagePath, durationSeconds, motionType, output
     zoomExpr = `scale=3840x2160:force_original_aspect_ratio=increase,crop=3840:2160,zoompan=z='1.14':x='(on/${frames})*(iw-iw/zoom)':y='ih/2-(ih/zoom/2)':d=${frames}:s=1920x1080:fps=30`;
   }
 
+  let inputImg = imagePath;
+  try {
+    const normalizedPath = path.join(path.dirname(outputPath), `norm_${path.basename(imagePath, path.extname(imagePath))}.jpg`);
+    await sharp(imagePath).jpeg({ quality: 95 }).toFile(normalizedPath);
+    inputImg = normalizedPath;
+  } catch (normErr) {
+    inputImg = imagePath;
+  }
+
   await runFFmpeg([
     '-y',
     '-loop', '1',
-    '-i', imagePath,
+    '-i', inputImg,
     '-vf', zoomExpr,
     '-t', durationSeconds.toFixed(2),
     '-c:v', 'libx264',

@@ -12,7 +12,11 @@ const WIKIPEDIA_USER_AGENT = 'Kannadiga369Bot/1.0 (contact@kannadiga369.com)';
 
 async function downloadImage(url, dest) {
   const res = await axios({ method: 'GET', url, responseType: 'arraybuffer', headers: { 'User-Agent': WIKIPEDIA_USER_AGENT } });
-  await fs.writeFile(dest, res.data);
+  try {
+    await sharp(res.data).jpeg({ quality: 95 }).toFile(dest);
+  } catch (err) {
+    await fs.writeFile(dest, res.data);
+  }
   return dest;
 }
 
@@ -249,10 +253,19 @@ async function renderCinematicScene(mediaPath, durationSeconds, motionType, outp
       }
     }
 
+    let inputImg = mediaPath;
+    try {
+      const normalizedPath = path.join(path.dirname(outputPath), `norm_${path.basename(mediaPath, path.extname(mediaPath))}.jpg`);
+      await sharp(mediaPath).jpeg({ quality: 95 }).toFile(normalizedPath);
+      inputImg = normalizedPath;
+    } catch (normErr) {
+      inputImg = mediaPath;
+    }
+
     await runFFmpeg([
       '-y',
       '-loop', '1',
-      '-i', mediaPath,
+      '-i', inputImg,
       '-vf', zoomExpr,
       '-t', durationSeconds.toFixed(2),
       '-c:v', 'libx264',
@@ -649,8 +662,11 @@ async function produceScheduledVideo(targetDay) {
     const sRaw = path.join(shortClipsDir, 'sraw.mp4');
     await runFFmpeg(['-y', '-f', 'concat', '-safe', '0', '-i', sConcat, '-c', 'copy', sRaw]);
 
+    const candidateBg1 = path.join(__dirname, '..', 'assets', 'audio', 'cinematic_suspense.mp3');
+    const candidateBg2 = path.join(__dirname, '..', 'data', 'audio', 'cinematic_suspense.mp3');
+    const shortBgMusic = fsSync.existsSync(candidateBg1) ? candidateBg1 : (fsSync.existsSync(candidateBg2) ? candidateBg2 : null);
     const sMixedAudio = path.join(shortClipsDir, 'smixed.m4a');
-    await mixMasterAudio(shortAudioPath, bgMusicPath, sMixedAudio, true);
+    await mixMasterAudio(shortAudioPath, shortBgMusic, sMixedAudio, true);
 
     const finalShortVideo = path.join(videosDir, `day_${entry.day}_short_${Date.now()}.mp4`);
     await runFFmpeg([

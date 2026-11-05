@@ -633,7 +633,7 @@
       "What If"
     ],
     "videoId": "UejpFjLRp5c",
-    "preRenderedShort": "data/videos/day_24_short_1793202962810.mp4"
+    "shortVideoId": "Lhknwio59tk"
   },
   {
     "day": 25,
@@ -663,7 +663,7 @@
   },
   {
     "day": 26,
-    "status": "pending",
+    "status": "scheduled",
     "scheduledDate": "2026-11-16T12:30:00.000Z",
     "title": "What If Earth Stopped Spinning for Just 5 Seconds? 🌍⚡ | The Cataclysmic Simulation",
     "topic": "What If Earth Stopped Spinning Simulation",
@@ -699,7 +699,9 @@
       "Cosmic Catastrophe",
       "Physics",
       "Aperture"
-    ]
+    ],
+    "videoId": "hMx1kKY_CzM",
+    "shortVideoId": "WRsd_Av5f50"
   },
   {
     "day": 27,

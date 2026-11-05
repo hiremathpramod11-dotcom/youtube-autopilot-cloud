@@ -12,7 +12,11 @@ const WIKIPEDIA_USER_AGENT = 'Kannadiga369Bot/1.0 (contact@kannadiga369.com)';
 
 async function downloadImage(url, dest) {
   const res = await axios({ method: 'GET', url, responseType: 'arraybuffer', headers: { 'User-Agent': WIKIPEDIA_USER_AGENT } });
-  await fs.writeFile(dest, res.data);
+  try {
+    await sharp(res.data).jpeg({ quality: 95 }).toFile(dest);
+  } catch (err) {
+    await fs.writeFile(dest, res.data);
+  }
   return dest;
 }
 
@@ -189,10 +193,19 @@ async function renderCinematicScene(mediaPath, durationSeconds, motionType, outp
       }
     }
 
+    let inputImg = mediaPath;
+    try {
+      const normalizedPath = path.join(path.dirname(outputPath), `norm_${path.basename(mediaPath, path.extname(mediaPath))}.jpg`);
+      await sharp(mediaPath).jpeg({ quality: 95 }).toFile(normalizedPath);
+      inputImg = normalizedPath;
+    } catch (normErr) {
+      inputImg = mediaPath;
+    }
+
     await runFFmpeg([
       '-y',
       '-loop', '1',
-      '-i', mediaPath,
+      '-i', inputImg,
       '-vf', zoomExpr,
       '-t', durationSeconds.toFixed(2),
       '-c:v', 'libx264',
